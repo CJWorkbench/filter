@@ -22,7 +22,7 @@ def render(table, params):
         if table[col].dtype == 'int64' or table[col].dtype == 'float64':
             raise ValueError('Column %s is not dates' % col)
 
-        # parse string as date, pull out day, convert back to string
+        # see if Pandas can make dates out of this column
         try:
             dates = pd.to_datetime(table[col])
         except (ValueError, TypeError):
