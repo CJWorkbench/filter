@@ -100,15 +100,22 @@ class TestFilter(unittest.TestCase):
 		self.assertTrue(out.equals(ref))
 
 	def test_bad_date(self):
+		# columns that aren't dates -> error
 		params = { 'column': 'a', 'condition': menu.index('Date is'), 'value':'2015-7-31'}
 		out = render(self.table, params)
 		self.assertTrue(isinstance(out, str))  # should return error message
 
 		params = { 'column': 'b', 'condition': menu.index('Date is'), 'value':'2015-7-31'}
 		out = render(self.table, params)
-		self.assertTrue(isinstance(out, str))  # should return error message
+		self.assertTrue(isinstance(out, str)) 
 
+		# stirng that isn't a date -> error
 		params = { 'column': 'date', 'condition': menu.index('Date is'), 'value':'gibberish'}
+		out = render(self.table, params)
+		self.assertTrue(isinstance(out, str))
+
+		# empty date -> error
+		params = { 'column': 'date', 'condition': menu.index('Date is'), 'value':''}
 		out = render(self.table, params)
 		self.assertTrue(isinstance(out, str))  # should return error message
 

@@ -10,9 +10,8 @@ def render(table, params):
 
     # simple date coercion logic for strings and columns
     def dateval(val):
-        try:
-            d = pd.to_datetime(val, error='coerce')  # coerce turns invalid dates into NaT
-        if d == pd.NaT: 
+        d = pd.to_datetime(val, errors='coerce')  # coerce turns invalid dates into NaT
+        if d is pd.NaT: 
             raise ValueError(str(val) + ' is not a valid date')
         return d
 
