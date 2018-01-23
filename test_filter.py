@@ -4,7 +4,7 @@ from filter import render
 
 # turn menu strings into indices for parameter dictionary
 # must be kept in sync with filter.json
-menutext = "Text contains|Text does not contain|Text is exactly|Cell is empty|Cell is not empty|Equals|Greater than||Greater than or equals|Less than|Less than or equals"
+menutext = "Text contains|Text does not contain|Text is exactly|Cell is empty|Cell is not empty|Equals|Greater than|Greater than or equals|Less than|Less than or equals"
 menu = menutext.split('|')
 
 class TestFilter(unittest.TestCase):

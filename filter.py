@@ -8,7 +8,7 @@ def render(table, params):
 
     # keep the switch statment in sync with the json by copying it here
     # This way we can switch on menu values not indices
-    menutext = "Text contains|Text does not contain|Text is exactly|Cell is empty|Cell is not empty|Equals|Greater than||Greater than or equals|Less than|Less than or equals"
+    menutext = "Text contains|Text does not contain|Text is exactly|Cell is empty|Cell is not empty|Equals|Greater than|Greater than or equals|Less than|Less than or equals"
     menu = menutext.split('|')
     cond = menu[cond]
 
