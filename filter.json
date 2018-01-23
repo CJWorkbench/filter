@@ -21,6 +21,6 @@
       "name": "Value",
       "id_name" : "value",
       "type": "column"
-    },
+    }
   ]
 }
