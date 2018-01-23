@@ -4,7 +4,7 @@ from filter import render
 
 # turn menu strings into indices for parameter dictionary
 # must be kept in sync with filter.json
-menutext = "Text contains|Text does not contain|Text is exactly|Cell is empty|Cell is not empty|Equals|Greater than|Greater than or equals|Less than|Less than or equals"
+menutext = "Text contains|Text does not contain|Text is exactly||Cell is empty|Cell is not empty||Equals|Greater than|Greater than or equals|Less than|Less than or equals||Date is|Date is before|Date is after"
 menu = menutext.split('|')
 
 class TestFilter(unittest.TestCase):
@@ -12,11 +12,11 @@ class TestFilter(unittest.TestCase):
 	def setUp(self):
 		# Test data includes some partially and completely empty rows because this tends to freak out Pandas
 		self.table = pd.DataFrame(
-			[['fred',2,3],
-			['frederson',5,None], 
-			[None, None, None],
-			['maggie',8,10]], 
-			columns=['a','b','c'])
+			[['fred',2,3,'2018-1-12'],
+			['frederson',5,None,'2018-1-12 08:15'], 
+			[None, None, None, None],
+			['maggie',8,10,'2015-7-31']], 
+			columns=['a','b','c','date'])
 
 	def test_no_column(self):
 		params = { 'column': '', 'condition': 0, 'value':''}
@@ -91,6 +91,38 @@ class TestFilter(unittest.TestCase):
 		params = { 'column': 'b', 'condition': menu.index('Less than or equals'), 'value':5}
 		out = render(self.table, params)
 		ref = self.table[[True, True, False, False]]
+		self.assertTrue(out.equals(ref))
+
+	def test_date_is(self):
+		params = { 'column': 'date', 'condition': menu.index('Date is'), 'value':'2015-7-31'}
+		out = render(self.table, params)
+		ref = self.table[[False, False, False, True]]
+		self.assertTrue(out.equals(ref))
+
+	def test_bad_date(self):
+		params = { 'column': 'a', 'condition': menu.index('Date is'), 'value':'2015-7-31'}
+		out = render(self.table, params)
+		self.assertTrue(isinstance(out, str))  # should return error message
+
+		params = { 'column': 'b', 'condition': menu.index('Date is'), 'value':'2015-7-31'}
+		out = render(self.table, params)
+		self.assertTrue(isinstance(out, str))  # should return error message
+
+		params = { 'column': 'date', 'condition': menu.index('Date is'), 'value':'gibberish'}
+		out = render(self.table, params)
+		self.assertTrue(isinstance(out, str))  # should return error message
+
+	def test_date_before(self):
+		params = { 'column': 'date', 'condition': menu.index('Date is before'), 'value':'2016-7-31'}
+		out = render(self.table, params)
+		ref = self.table[[False, False, False, True]]
+		self.assertTrue(out.equals(ref))
+
+	def test_date_after(self):
+		# edge case, first row is 2018-1-12 08:15 so after implied midnight of date without time
+		params = { 'column': 'date', 'condition': menu.index('Date is after'), 'value':'2018-1-12'}
+		out = render(self.table, params)
+		ref = self.table[[False, True, False, False]]
 		self.assertTrue(out.equals(ref))
 
 if __name__ == '__main__':
