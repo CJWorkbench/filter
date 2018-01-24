@@ -23,6 +23,11 @@ class TestFilter(unittest.TestCase):
 		out = render(self.table, params)
 		self.assertTrue(out.equals(self.table)) # should NOP when first applied
 
+	def test_no_value(self):
+		params = { 'column': 'a', 'condition': 0, 'value':''}
+		out = render(self.table, params)
+		self.assertTrue(out.equals(self.table)) # should NOP if no value
+
 	def test_contains(self):
 		params = { 'column': 'a', 'condition': menu.index('Text contains'), 'value':'fred'}
 		out = render(self.table, params)
@@ -53,10 +58,20 @@ class TestFilter(unittest.TestCase):
 		ref = self.table[[False, True, True, False]]
 		self.assertTrue(out.equals(ref))
 
+		# should not require value 
+		params = { 'column': 'c', 'condition': menu.index('Cell is empty'), 'value':''}
+		out = render(self.table, params)
+		self.assertTrue(out.equals(ref))
+
 	def test_not_empty(self):
 		params = { 'column': 'c', 'condition': menu.index('Cell is not empty'), 'value':'nonsense'}
 		out = render(self.table, params)
 		ref = self.table[[True, False, False, True]]
+		self.assertTrue(out.equals(ref))
+
+		# should not require value 
+		params = { 'column': 'c', 'condition': menu.index('Cell is not empty'), 'value':''}
+		out = render(self.table, params)
 		self.assertTrue(out.equals(ref))
 
 	def test_equals(self):
@@ -113,11 +128,6 @@ class TestFilter(unittest.TestCase):
 		params = { 'column': 'date', 'condition': menu.index('Date is'), 'value':'gibberish'}
 		out = render(self.table, params)
 		self.assertTrue(isinstance(out, str))
-
-		# empty date -> error
-		params = { 'column': 'date', 'condition': menu.index('Date is'), 'value':''}
-		out = render(self.table, params)
-		self.assertTrue(isinstance(out, str))  # should return error message
 
 	def test_date_before(self):
 		params = { 'column': 'date', 'condition': menu.index('Date is before'), 'value':'2016-7-31'}

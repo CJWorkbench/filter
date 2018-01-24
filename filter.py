@@ -37,6 +37,11 @@ def render(table, params):
     menu = menutext.split('|')
     cond = menu[cond]
 
+    # all conditions except empty cell should NOP if no value
+    if cond!='Cell is empty' and cond!='Cell is not empty':
+        if val=='':
+            return table
+            
     try:
 
         if cond=='Text contains':
