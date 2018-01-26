@@ -18,9 +18,10 @@
       "default": "0"
     },
     {
-      "name": "Value",
+      "name": "",
       "id_name" : "value",
-      "type": "string"
+      "type": "string",
+      "Placeholder":"Type something"
     }
   ]
 }
