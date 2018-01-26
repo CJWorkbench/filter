@@ -21,7 +21,7 @@
       "name": "",
       "id_name" : "value",
       "type": "string",
-      "Placeholder":"Type something"
+      "placeholder":"Type something"
     }
   ]
 }
