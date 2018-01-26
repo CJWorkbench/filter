@@ -3,7 +3,7 @@
   "id_name": "filter",
   "description": "Keep or drop rows by condition",
   "category" : "Analyse",
-  "icon": "transform-v",
+  "icon": "filter",
   "parameters": [
     {
       "name": "Filter by",
