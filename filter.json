@@ -4,6 +4,7 @@
   "description": "Keep or drop rows by condition",
   "category" : "Analyse",
   "icon": "filter",
+  "help_url":"modules/analyse/filter",
   "parameters": [
     {
       "name": "Filter by",
