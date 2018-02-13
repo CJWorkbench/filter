@@ -2,7 +2,7 @@
   "name": "Filter",
   "id_name": "filter",
   "description": "Keep or drop rows by condition",
-  "category" : "Analyse",
+  "category" : "Analyze",
   "icon": "filter",
   "help_url":"modules/analyse/filter",
   "parameters": [
