@@ -142,5 +142,7 @@ class TestFilter(unittest.TestCase):
 		ref = self.table[[False, True, False, False]]
 		self.assertTrue(out.equals(ref))
 
+
+
 if __name__ == '__main__':
     unittest.main()

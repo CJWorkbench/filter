@@ -84,9 +84,11 @@ def render(table, params):
             table = table[datevals(table,col)>dateval(val)]
 
         elif cond=='Filter by text':
-            query = wf_module.get_param_string('value')
-            cols = wf_module.get_param_string('colnames').split(',')
+            query = params('value')
+            cols = params('colnames').split(',')
             cols = [c.strip() for c in cols]
+            print(params['casesensitive'])
+            print(params['regex'])
             case_sensitive = wf_module.get_param_checkbox('casesensitive')
             regex = wf_module.get_param_checkbox('regex')
             if (cols != [''] and query != ''):
