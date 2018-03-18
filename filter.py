@@ -84,8 +84,8 @@ def render(table, params):
             table = table[datevals(table,col)>dateval(val)]
 
         elif cond=='Filter by text':
-            query = params('value')
-            cols = params('colnames').split(',')
+            query = params['value']
+            cols = params['colnames'].split(',')
             cols = [c.strip() for c in cols]
             print(params['casesensitive'])
             print(params['regex'])
