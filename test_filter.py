@@ -4,18 +4,18 @@ from filter import render
 
 # turn menu strings into indices for parameter dictionary
 # must be kept in sync with filter.json
-menutext = "Text contains|Text does not contain|Text is exactly||Cell is empty|Cell is not empty||Equals|Greater than|Greater than or equals|Less than|Less than or equals||Date is|Date is before|Date is after"
+menutext = "Text contains|Text does not contain|Text is exactly||Cell is empty|Cell is not empty||Equals|Greater than|Greater than or equals|Less than|Less than or equals||Date is|Date is before|Date is after|Filter by text"
 menu = menutext.split('|')
 
 class TestFilter(unittest.TestCase):
- 
+
 	def setUp(self):
 		# Test data includes some partially and completely empty rows because this tends to freak out Pandas
 		self.table = pd.DataFrame(
 			[['fred',2,3,'2018-1-12'],
-			['frederson',5,None,'2018-1-12 08:15'], 
+			['frederson',5,None,'2018-1-12 08:15'],
 			[None, None, None, None],
-			['maggie',8,10,'2015-7-31']], 
+			['maggie',8,10,'2015-7-31']],
 			columns=['a','b','c','date'])
 
 	def test_no_column(self):
@@ -45,20 +45,20 @@ class TestFilter(unittest.TestCase):
 		out = render(self.table, params)
 		ref = self.table[[True, False, False, False]]
 		self.assertTrue(out.equals(ref))
- 
+
 		# Do numeric equals on a numeric column
 		params = { 'column': 'b', 'condition': menu.index('Text is exactly'), 'value':5}
 		out = render(self.table, params)
 		ref = self.table[[False, True, False, False]]
 		self.assertTrue(out.equals(ref))
- 
+
 	def test_empty(self):
 		params = { 'column': 'c', 'condition': menu.index('Cell is empty'), 'value':'nonsense'}
 		out = render(self.table, params)
 		ref = self.table[[False, True, True, False]]
 		self.assertTrue(out.equals(ref))
 
-		# should not require value 
+		# should not require value
 		params = { 'column': 'c', 'condition': menu.index('Cell is empty'), 'value':''}
 		out = render(self.table, params)
 		self.assertTrue(out.equals(ref))
@@ -69,7 +69,7 @@ class TestFilter(unittest.TestCase):
 		ref = self.table[[True, False, False, True]]
 		self.assertTrue(out.equals(ref))
 
-		# should not require value 
+		# should not require value
 		params = { 'column': 'c', 'condition': menu.index('Cell is not empty'), 'value':''}
 		out = render(self.table, params)
 		self.assertTrue(out.equals(ref))
@@ -122,7 +122,7 @@ class TestFilter(unittest.TestCase):
 
 		params = { 'column': 'b', 'condition': menu.index('Date is'), 'value':'2015-7-31'}
 		out = render(self.table, params)
-		self.assertTrue(isinstance(out, str)) 
+		self.assertTrue(isinstance(out, str))
 
 		# stirng that isn't a date -> error
 		params = { 'column': 'date', 'condition': menu.index('Date is'), 'value':'gibberish'}

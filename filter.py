@@ -13,7 +13,7 @@ def render(table, params):
         if val.strip() == '':
             raise ValueError(str(val) + 'Please enter a date')
         d = pd.to_datetime(val, errors='coerce')  # coerce turns invalid dates into NaT
-        if d is pd.NaT: 
+        if d is pd.NaT:
             raise ValueError(str(val) + ' is not a valid date')
         return d
 
@@ -27,13 +27,13 @@ def render(table, params):
             dates = pd.to_datetime(table[col])
         except (ValueError, TypeError):
             raise ValueError('Column %s is not dates' % col)
-        
+
         return dates
 
 
     # keep the switch statment in sync with the json by copying it here
     # This way we can switch on menu values not indices
-    menutext = "Text contains|Text does not contain|Text is exactly||Cell is empty|Cell is not empty||Equals|Greater than|Greater than or equals|Less than|Less than or equals||Date is|Date is before|Date is after"
+    menutext = "Text contains|Text does not contain|Text is exactly||Cell is empty|Cell is not empty||Equals|Greater than|Greater than or equals|Less than|Less than or equals||Date is|Date is before|Date is after|Filter by text"
     menu = menutext.split('|')
     cond = menu[cond]
 
@@ -41,11 +41,11 @@ def render(table, params):
     if cond!='Cell is empty' and cond!='Cell is not empty':
         if val=='':
             return table
-            
+
     try:
 
         if cond=='Text contains':
-            table = table[table[col].str.contains(val)==True]   # == True to handle None return on None column values 
+            table = table[table[col].str.contains(val)==True]   # == True to handle None return on None column values
 
         elif cond=='Text does not contain':
             table = table[table[col].str.contains(val)!=True]
@@ -73,18 +73,39 @@ def render(table, params):
 
         elif cond=='Less than or equals':
             table = table[table[col]<=val]
-        
+
         elif cond=='Date is':
             table = table[datevals(table,col)==dateval(val)]
-        
+
         elif cond=='Date is before':
             table = table[datevals(table,col)<dateval(val)]
 
         elif cond=='Date is after':
             table = table[datevals(table,col)>dateval(val)]
-    
+
+        elif cond=='Filter by text':
+            query = wf_module.get_param_string('value')
+            cols = wf_module.get_param_string('colnames').split(',')
+            cols = [c.strip() for c in cols]
+            case_sensitive = wf_module.get_param_checkbox('casesensitive')
+            regex = wf_module.get_param_checkbox('regex')
+            if (cols != [''] and query != ''):
+                keeprows = None
+                for c in cols:
+                    if not c in table.columns:
+                        return('There is no column named %s' % c)
+
+                    kr = table[c].astype(str).str.contains(query, case=case_sensitive, regex=regex)
+
+                    # logical OR of all matching columns
+                    if keeprows is not None:
+                        keeprows = keeprows | kr
+                    else:
+                        keeprows = kr
+
+                table = table[keeprows]
+
     except ValueError as e: # capture datevals exceptions
         return str(e)       # string return type means error
 
     return table
-

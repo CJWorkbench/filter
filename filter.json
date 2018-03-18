@@ -7,22 +7,46 @@
   "help_url":"modules/analyse/filter",
   "parameters": [
     {
+      "name": "Condition",
+      "id_name" : "condition",
+      "type" : "menu",
+      "menu_items" : "Text contains|Text does not contain|Text is exactly||Cell is empty|Cell is not empty||Equals|Greater than|Greater than or equals|Less than|Less than or equals||Date is|Date is before|Date is after|Filter by text",
+      "default": "0"
+    },
+    {
+      "name": "Value for condition",
+      "id_name" : "value",
+      "type": "string",
+      "placeholder":"Type something"
+    },
+    {
+      "name": "Case sensitive",
+      "id_name": "casesensitive",
+      "type": "checkbox",
+      "default": "False"
+    },
+    {
+      "name": "Regular expression",
+      "id_name": "regex",
+      "type": "checkbox",
+      "default": "False"
+    },
+    {
       "name": "Filter by",
       "id_name" : "column",
       "type": "column"
     },
     {
-      "name": "Condition",
-      "id_name" : "condition",
-      "type" : "menu",
-      "menu_items" : "Text contains|Text does not contain|Text is exactly||Cell is empty|Cell is not empty||Equals|Greater than|Greater than or equals|Less than|Less than or equals||Date is|Date is before|Date is after",
-      "default": "0"
+      "name": "In columns",
+      "id_name": "colselect",
+      "type": "multicolumn",
+      "ui-only": true
     },
     {
-      "name": "",
-      "id_name" : "value",
+      "name": "Column Names",
+      "id_name": "colnames",
       "type": "string",
-      "placeholder":"Type something"
+      "visible": false
     }
   ]
 }
