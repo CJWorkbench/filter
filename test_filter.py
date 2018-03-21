@@ -7,6 +7,10 @@ from filter import render
 menutext = "Text contains|Text does not contain|Text is exactly||Cell is empty|Cell is not empty||Equals|Greater than|Greater than or equals|Less than|Less than or equals||Date is|Date is before|Date is after||Filter by text"
 menu = menutext.split('|')
 
+# keep menu
+keeptext = 'Keep|Drop'
+keepmenu = keeptext.split('|')
+
 
 class TestFilter(unittest.TestCase):
 
@@ -16,7 +20,7 @@ class TestFilter(unittest.TestCase):
 			[['fred', 2, 3, 'round', '2018-1-12'],
 			['frederson', 5, None, 'square', '2018-1-12 08:15'],
 			[None, None, None, None, None],
-			['maggie', 8, 10, 'round', '2015-7-31'],
+			['maggie', 8, 10, 'Round', '2015-7-31'],
 			['Fredrick', 5, None, 'square', '2018-3-12']],
 			columns=['a', 'b', 'c', 'd', 'date'])
 
@@ -31,29 +35,143 @@ class TestFilter(unittest.TestCase):
 		self.assertTrue(out.equals(self.table))  # should NOP if no value
 
 	def test_contains(self):
-		params = {'column': 'a', 'condition': menu.index(
-		'Text contains'), 'value': 'fred'}
+		# Case-insensitive, no regex, keep
+		params = {
+			'column': 'a',
+			'condition': menu.index('Text contains'),
+			'value': 'fred',
+			'casesensitive': False,
+			'regex': False,
+			'keep': keepmenu.index('Keep')
+		}
+		out = render(self.table, params)
+		ref = self.table[[True, True, False, False, True]]
+		self.assertTrue(out.equals(ref))
+
+		# Case-sensitive, no regex, keep
+		params = {
+			'column': 'a',
+			'condition': menu.index('Text contains'),
+			'value': 'fred',
+			'casesensitive': True,
+			'regex': False,
+			'keep': keepmenu.index('Keep')
+		}
 		out = render(self.table, params)
 		ref = self.table[[True, True, False, False, False]]
 		self.assertTrue(out.equals(ref))
 
-	def test_not_contains(self):
-		params = {'column': 'a', 'condition': menu.index(
-		'Text does not contain'), 'value': 'fred'}
+		# Case-sensitive, regex, keep
+		params = {
+			'column': 'a',
+			'condition': menu.index('Text contains'),
+			'value': 'f[a-zA-Z]+d',
+			'casesensitive': True,
+			'regex': True,
+			'keep': keepmenu.index('Keep')
+		}
+		out = render(self.table, params)
+		ref = self.table[[True, True, False, False, False]]
+		self.assertTrue(out.equals(ref))
+
+		# Case-sensitive, regex, drop
+		params = {
+			'column': 'a',
+			'condition': menu.index('Text contains'),
+			'value': 'f[a-zA-Z]+d',
+			'casesensitive': True,
+			'regex': True,
+			'keep': keepmenu.index('Drop')
+		}
 		out = render(self.table, params)
 		ref = self.table[[False, False, True, True, True]]
 		self.assertTrue(out.equals(ref))
 
+	def test_not_contains(self):
+		# Case-insensitive, no regex, keep
+		params = {
+			'column': 'a',
+			'condition': menu.index('Text does not contain'),
+			'value': 'fred',
+			'casesensitive': False,
+			'regex': False,
+			'keep': keepmenu.index('Keep')
+		}
+		out = render(self.table, params)
+		ref = self.table[[False, False, True, True, False]]
+		self.assertTrue(out.equals(ref))
+
+		# Case-sensitive, no regex, keep
+		params = {
+			'column': 'a',
+			'condition': menu.index('Text does not contain'),
+			'value': 'fred',
+			'casesensitive': True,
+			'regex': False,
+			'keep': keepmenu.index('Keep')
+		}
+		out = render(self.table, params)
+		ref = self.table[[False, False, True, True, True]]
+		self.assertTrue(out.equals(ref))
+
+		# Case-sensitive, regex, keep
+		params = {
+			'column': 'a',
+			'condition': menu.index('Text does not contain'),
+			'value': 'f[a-zA-Z]+d',
+			'casesensitive': True,
+			'regex': True,
+			'keep': keepmenu.index('Keep')
+		}
+		out = render(self.table, params)
+		ref = self.table[[False, False, True, True, True]]
+		self.assertTrue(out.equals(ref))
+
+		# Case-sensitive, regex, drop
+		params = {
+			'column': 'a',
+			'condition': menu.index('Text does not contain'),
+			'value': 'f[a-zA-Z]+d',
+			'casesensitive': True,
+			'regex': True,
+			'keep': keepmenu.index('Drop')
+		}
+		out = render(self.table, params)
+		ref = self.table[[True, True, False, False, False]]
+		self.assertTrue(out.equals(ref))
+
 	def test_exactly(self):
-		params = {'column': 'a', 'condition': menu.index(
-		'Text is exactly'), 'value': 'fred'}
+		params = {
+			'column': 'a',
+			'condition': menu.index('Text is exactly'),
+			'value': 'fred',
+			'casesensitive': True,
+			'regex': False,
+			'keep': keepmenu.index('Keep')
+		}
 		out = render(self.table, params)
 		ref = self.table[[True, False, False, False, False]]
 		self.assertTrue(out.equals(ref))
 
+		params = {
+			'column': 'd',
+			'condition': menu.index('Text is exactly'),
+			'value': 'round',
+			'casesensitive': False,
+			'regex': False,
+			'keep': keepmenu.index('Keep')
+		}
+		out = render(self.table, params)
+		ref = self.table[[True, False, False, True, False]]
+		self.assertTrue(out.equals(ref))
+
 		# Do numeric equals on a numeric column
-		params = {'column': 'b', 'condition': menu.index(
-		'Text is exactly'), 'value': 5}
+		params = {'column': 'b',
+			'condition': menu.index('Text is exactly'),
+			'casesensitive': False,
+			'regex': False,
+			'value': 5,
+			'keep': keepmenu.index('Keep')}
 		out = render(self.table, params)
 		ref = self.table[[False, True, False, False, True]]
 		self.assertTrue(out.equals(ref))
@@ -158,42 +276,6 @@ class TestFilter(unittest.TestCase):
 		'Date is after'), 'value': '2018-1-12'}
 		out = render(self.table, params)
 		ref = self.table[[False, True, False, False, True]]
-		self.assertTrue(out.equals(ref))
-
-	def test_filter_vanilla(self):
-		params = {
-			'colnames': 'a, d',
-			'casesensitive': False,
-			'regex': False,
-			'value': 'o',
-			'condition': menu.index('Filter by text')
-		}
-		out = render(self.table, params)
-		ref = self.table[[True, True, False, True, False]]
-		self.assertTrue(out.equals(ref))
-
-	def test_filter_casesensitive(self):
-		params = {
-			'colnames': 'a, d',
-			'casesensitive': True,
-			'regex': False,
-			'value': 'Fred',
-			'condition': menu.index('Filter by text')
-		}
-		out = render(self.table, params)
-		ref = self.table[[False, False, False, False, True]]
-		self.assertTrue(out.equals(ref))
-
-	def test_filter_regex(self):
-		params = {
-			'colnames': 'a, d',
-			'casesensitive': False,
-			'regex': True,
-			'value': 'r*d',
-			'condition': menu.index('Filter by text')
-		}
-		out = render(self.table, params)
-		ref = self.table[[True, True, False, True, True]]
 		self.assertTrue(out.equals(ref))
 
 

@@ -1,11 +1,15 @@
 def render(table, params):
     cond = params['condition']
+    keep = params.get('keep', 0)
     val = params['value']
+    col = params.get('column', '')
 
-    #if col == '':
-    #    return table
+    if col == '':
+        return table
 
     import pandas as pd
+
+    keeprows = None
 
     # simple date coercion logic for strings and columns
     def dateval(val):
@@ -32,9 +36,14 @@ def render(table, params):
 
     # keep the switch statment in sync with the json by copying it here
     # This way we can switch on menu values not indices
-    menutext = "Text contains|Text does not contain|Text is exactly||Cell is empty|Cell is not empty||Equals|Greater than|Greater than or equals|Less than|Less than or equals||Date is|Date is before|Date is after||Filter by text"
+    menutext = "Text contains|Text does not contain|Text is exactly||Cell is empty|Cell is not empty||Equals|Greater than|Greater than or equals|Less than|Less than or equals||Date is|Date is before|Date is after"
     menu = menutext.split('|')
     cond = menu[cond]
+
+    # get the keep/drop condition
+    keeptext = 'Keep|Drop'
+    keepmenu = keeptext.split('|')
+    keepcond = keepmenu[keep]
 
     # all conditions except empty cell should NOP if no value
     if cond!='Cell is empty' and cond!='Cell is not empty':
@@ -43,76 +52,67 @@ def render(table, params):
 
     try:
 
-        if cond != 'Filter by text':
-            # We are using 'col' if condition isn't filter by text
-
-            col = params['column']
-
-            if col == '':
-                return table
-
-            if cond=='Text contains':
-                table = table[table[col].str.contains(val)==True]   # == True to handle None return on None column values
-
-            elif cond=='Text does not contain':
-                table = table[table[col].str.contains(val)!=True]
-
-            elif cond=='Text is exactly':
-                table = table[table[col]==val]
-
-            elif cond=='Cell is empty':
-                table = table[table[col].isnull()]
-
-            elif cond=='Cell is not empty':
-                table = table[table[col].isnull()!=True]
-
-            elif cond=='Equals':
-                table = table[table[col]==val]
-
-            elif cond=='Greater than':
-                table = table[table[col]>val]
-
-            elif cond=='Greater than or equals':
-                table = table[table[col]>=val]
-
-            elif cond=='Less than':
-                table = table[table[col]<val]
-
-            elif cond=='Less than or equals':
-                table = table[table[col]<=val]
-
-            elif cond=='Date is':
-                table = table[datevals(table,col)==dateval(val)]
-
-            elif cond=='Date is before':
-                table = table[datevals(table,col)<dateval(val)]
-
-            elif cond=='Date is after':
-                table = table[datevals(table,col)>dateval(val)]
-
-        else:
-            # This is basically code from textsearch.py
-
-            query = val
-            cols = params['colnames'].split(',')
-            cols = [c.strip() for c in cols]
+        if cond=='Text contains':
             case_sensitive = params['casesensitive']
             regex = params['regex']
-            if (cols != [''] and query != ''):
-                keeprows = None
-                for c in cols:
-                    if not c in table.columns:
-                        return('There is no column named %s' % c)
+            keeprows = table[col].fillna('').astype(str).str.contains(val, case=case_sensitive, regex=regex)   # == True to handle None return on None column values
 
-                    kr = table[c].fillna('').astype(str).str.contains(query, case=case_sensitive, regex=regex)
+        elif cond=='Text does not contain':
+            case_sensitive = params['casesensitive']
+            regex = params['regex']
+            keeprows = ~table[col].fillna('').astype(str).str.contains(val, case=case_sensitive, regex=regex)
+            
+        elif cond=='Text is exactly':
+            case_sensitive = params['casesensitive']
+            regex = params['regex']
+            if regex:
+                keeprows = table[col].fillna('').astype(str).str.match(val, case=case_sensitive)
+            else:
+                if case_sensitive:
+                    keeprows = (table[col] == val)
+                else:
+                    try:
+                        # If value is a number, coerce column to number and see what we've got
+                        num_val = float(val)
+                        keeprows = (pd.to_numeric(table[col].fillna('')) == num_val)
+                    except:
+                        # If the conversion fails, then it's a string. Compare lowercase results
+                        keeprows = (table[col].fillna('').astype(str).str.lower().str.strip() == str(val).lower().strip())
 
-                    # logical OR of all matching columns
-                    if keeprows is not None:
-                        keeprows = keeprows | kr
-                    else:
-                        keeprows = kr
+        elif cond=='Cell is empty':
+            keeprows = table[col].isnull()
 
-                table = table[keeprows]
+        elif cond=='Cell is not empty':
+            keeprows = (table[col].isnull() != True)
+
+        elif cond=='Equals':
+            keeprows = (table[col] == val)
+
+        elif cond=='Greater than':
+            keeprows = (table[col] > val)
+
+        elif cond=='Greater than or equals':
+            keeprows = (table[col] >= val)
+
+        elif cond=='Less than':
+            keeprows = (table[col] < val)
+
+        elif cond=='Less than or equals':
+            keeprows = (table[col] <= val)
+
+        elif cond=='Date is':
+            keeprows = (datevals(table, col) == dateval(val))
+
+        elif cond=='Date is before':
+            keeprows = (datevals(table, col) < dateval(val))
+
+        elif cond=='Date is after':
+            keeprows = (datevals(table, col) > dateval(val))
+
+        if keepcond == 'Keep':
+            return table[keeprows]
+        else:
+            return table[~keeprows]
 
     except ValueError as e: # capture datevals exceptions
         return str(e)       # string return type means error
