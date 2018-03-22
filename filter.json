@@ -22,19 +22,31 @@
       "name": "Value for condition",
       "id_name" : "value",
       "type": "string",
-      "placeholder":"Type something"
+      "placeholder":"Type something",
+      "visible_if_not": {
+        "id_name": "condition",
+        "value": "Cell is empty|Cell is not empty"
+      }
     },
     {
       "name": "Case sensitive",
       "id_name": "casesensitive",
       "type": "checkbox",
-      "default": "False"
+      "default": "False",
+      "visible_if": {
+        "id_name": "condition",
+        "value": "Text contains|Text does not contain|Text is exactly"
+      }
     },
     {
       "name": "Regular expression",
       "id_name": "regex",
       "type": "checkbox",
-      "default": "False"
+      "default": "False",
+      "visible_if": {
+        "id_name": "condition",
+        "value": "Text contains|Text does not contain|Text is exactly"
+      }
     },
     {
       "name": "Keep or drop",
