@@ -1,7 +1,7 @@
 def render(table, params):
     cond = params['condition']
     keep = params.get('keep', 0)
-    val = params['value']
+    val = params.get('value', '')
     col = params.get('column', '')
 
     if col == '':
@@ -53,9 +53,12 @@ def render(table, params):
 
     # keep the switch statment in sync with the json by copying it here
     # This way we can switch on menu values not indices
-    menutext = "Text contains|Text does not contain|Text is exactly||Cell is empty|Cell is not empty||Equals|Greater than|Greater than or equals|Less than|Less than or equals||Date is|Date is before|Date is after"
+    menutext = "Select||Text contains|Text does not contain|Text is exactly||Cell is empty|Cell is not empty||Equals|Greater than|Greater than or equals|Less than|Less than or equals||Date is|Date is before|Date is after"
     menu = menutext.split('|')
     cond = menu[cond]
+
+    if cond == 'Select':
+        return table
 
     # get the keep/drop condition
     keeptext = 'Keep|Drop'

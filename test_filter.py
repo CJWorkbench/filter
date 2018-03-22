@@ -4,7 +4,7 @@ from filter import render
 
 # turn menu strings into indices for parameter dictionary
 # must be kept in sync with filter.json
-menutext = "Text contains|Text does not contain|Text is exactly||Cell is empty|Cell is not empty||Equals|Greater than|Greater than or equals|Less than|Less than or equals||Date is|Date is before|Date is after||Filter by text"
+menutext = "Select||Text contains|Text does not contain|Text is exactly||Cell is empty|Cell is not empty||Equals|Greater than|Greater than or equals|Less than|Less than or equals||Date is|Date is before|Date is after||Filter by text"
 menu = menutext.split('|')
 
 # keep menu
@@ -28,6 +28,14 @@ class TestFilter(unittest.TestCase):
 		params = {'column': '', 'condition': 0, 'value': ''}
 		out = render(self.table, params)
 		self.assertTrue(out.equals(self.table))  # should NOP when first applied
+
+	def test_no_condition(self):
+		params = {
+			'column': 'a',
+			'condition': menu.index('Select')
+		}
+		out = render(self.table, params)
+		self.assertTrue(out.equals(self.table))
 
 	def test_no_value(self):
 		params = {'column': 'a', 'condition': 0, 'value': ''}
