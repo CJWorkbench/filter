@@ -203,44 +203,93 @@ class TestFilter(unittest.TestCase):
 		self.assertTrue(out.equals(ref))
 
 	def test_equals(self):
-		params = {'column': 'c', 'condition': menu.index('Equals'), 'value': 3}
+		# working as intended
+		params = {
+			'column': 'c',
+			'condition': menu.index('Equals'),
+			'value': '3'
+		}
 		out = render(self.table, params)
 		ref = self.table[[True, False, False, False, False]]
 		self.assertTrue(out.equals(ref))
 
+		# non-numeric column should return error message
+		params = {
+			'column': 'a',
+			'condition': menu.index('Equals'),
+			'value': '3'
+		}
+		out = render(self.table, params)
+		self.assertTrue(isinstance(out, str))  # should return error message
+
+		# non-numeric column should return error message
+		params = {
+			'column': 'date',
+			'condition': menu.index('Equals'),
+			'value': '3'
+		}
+		out = render(self.table, params)
+		self.assertTrue(isinstance(out, str))  # should return error message
+
+		# non-numeric value should return error message
+		params = {
+			'column': 'c',
+			'condition': menu.index('Equals'),
+			'value': 'gibberish'
+		}
+		out = render(self.table, params)
+		self.assertTrue(isinstance(out, str))  # should return error message
+
 	def test_greater(self):
 		# edge case, first row has b=2
-		params = {'column': 'b', 'condition': menu.index('Greater than'), 'value': 2}
+		params = {
+			'column': 'b',
+			'condition': menu.index('Greater than'),
+			'value': '2'
+		}
 		out = render(self.table, params)
 		ref = self.table[[False, True, False, True, True]]
 		self.assertTrue(out.equals(ref))
 
 	def test_greater_equals(self):
 		# edge case, first row has b=2
-		params = {'column': 'b', 'condition': menu.index(
-		'Greater than or equals'), 'value': 2}
+		params = {
+			'column': 'b',
+			'condition': menu.index('Greater than or equals'),
+			'value': '2'
+		}
 		out = render(self.table, params)
 		ref = self.table[[True, True, False, True, True]]
 		self.assertTrue(out.equals(ref))
 
 	def test_less(self):
 		# edge case, second and last row has b=5
-		params = {'column': 'b', 'condition': menu.index('Less than'), 'value': 5}
+		params = {
+			'column': 'b',
+			'condition': menu.index('Less than'),
+			'value': '5'
+		}
 		out = render(self.table, params)
 		ref = self.table[[True, False, False, False, False]]
 		self.assertTrue(out.equals(ref))
 
 	def test_less_equals(self):
 		# edge case, second and last row has b=5
-		params = {'column': 'b', 'condition': menu.index(
-		'Less than or equals'), 'value': 5}
+		params = {
+			'column': 'b',
+			'condition': menu.index('Less than or equals'),
+			'value': '5'
+		}
 		out = render(self.table, params)
 		ref = self.table[[True, True, False, False, True]]
 		self.assertTrue(out.equals(ref))
 
 	def test_date_is(self):
-		params = {'column': 'date', 'condition': menu.index(
-		'Date is'), 'value': '2015-7-31'}
+		params = {
+			'column': 'date',
+			'condition': menu.index('Date is'),
+			'value': '2015-7-31'
+		}
 		out = render(self.table, params)
 		ref = self.table[[False, False, False, True, False]]
 		self.assertTrue(out.equals(ref))

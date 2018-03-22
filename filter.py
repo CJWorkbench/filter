@@ -20,6 +20,7 @@ def render(table, params):
             raise ValueError(str(val) + ' is not a valid date')
         return d
 
+    # Simple coercion logic to numbers
     def datevals(table, col):
         # numeric columns, just... no. Never really want to interpret as seconds since 1970
         if table[col].dtype == 'int64' or table[col].dtype == 'float64':
@@ -33,6 +34,22 @@ def render(table, params):
 
         return dates
 
+    def numericval(val):
+        numval = None
+        try:
+            numval = float(val)
+        except:
+            raise ValueError(str(val) + ' is not a valid number')
+
+        return numval
+
+    def numericvals(table, col):
+        try:
+            vals = pd.to_numeric(table[col], errors='raise')
+        except:
+            raise ValueError('Column %s is not numeric' % col)
+
+        return vals
 
     # keep the switch statment in sync with the json by copying it here
     # This way we can switch on menu values not indices
@@ -61,7 +78,7 @@ def render(table, params):
             case_sensitive = params['casesensitive']
             regex = params['regex']
             keeprows = ~table[col].fillna('').astype(str).str.contains(val, case=case_sensitive, regex=regex)
-            
+
         elif cond=='Text is exactly':
             case_sensitive = params['casesensitive']
             regex = params['regex']
@@ -86,19 +103,19 @@ def render(table, params):
             keeprows = (table[col].isnull() != True)
 
         elif cond=='Equals':
-            keeprows = (table[col] == val)
+            keeprows = (numericvals(table, col) == numericval(val))
 
         elif cond=='Greater than':
-            keeprows = (table[col] > val)
+            keeprows = (numericvals(table, col) > numericval(val))
 
         elif cond=='Greater than or equals':
-            keeprows = (table[col] >= val)
+            keeprows = (numericvals(table, col) >= numericval(val))
 
         elif cond=='Less than':
-            keeprows = (table[col] < val)
+            keeprows = (numericvals(table, col) < numericval(val))
 
         elif cond=='Less than or equals':
-            keeprows = (table[col] <= val)
+            keeprows = (numericvals(table, col) <= numericval(val))
 
         elif cond=='Date is':
             keeprows = (datevals(table, col) == dateval(val))
