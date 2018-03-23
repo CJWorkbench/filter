@@ -22,6 +22,7 @@
       "name": "Value for condition",
       "id_name" : "value",
       "type": "string",
+      "default": "False",
       "placeholder":"Type something",
       "visible_if_not": {
         "id_name": "condition",
@@ -52,6 +53,7 @@
       "name": "Keep or drop",
       "id_name": "keep",
       "type": "menu",
+      "default": "False",
       "menu_items": "Keep|Drop",
       "visible_if_not": {
         "id_name": "condition",
