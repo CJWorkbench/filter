@@ -25,7 +25,7 @@
       "placeholder":"Type something",
       "visible_if_not": {
         "id_name": "condition",
-        "value": "Cell is empty|Cell is not empty|select"
+        "value": "Cell is empty|Cell is not empty|Select"
       }
     },
     {
