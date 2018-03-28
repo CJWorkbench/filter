@@ -19,7 +19,7 @@
       "default": "0"
     },
     {
-      "name": "Value for condition",
+      "name": "",
       "id_name" : "value",
       "type": "string",
       "placeholder":"Type something",
