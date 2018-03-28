@@ -23,7 +23,8 @@
       "id_name" : "value",
       "type": "string",
       "placeholder":"Type something",
-      "visible_if_not": {
+      "visible_if": {
+        "invert":true,
         "id_name": "condition",
         "value": "Select|Cell is empty|Cell is not empty"
       }
