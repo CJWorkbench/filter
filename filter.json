@@ -1,7 +1,6 @@
 {
   "name": "Filter by",
   "id_name": "filter",
-  "description": "Keep or drop rows by condition",
   "category" : "Analyze",
   "icon": "filter",
   "help_url":"modules/analyse/filter",
