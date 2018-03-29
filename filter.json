@@ -7,7 +7,7 @@
   "help_url":"modules/analyse/filter",
   "parameters": [
     {
-      "name": "By",
+      "name": "",
       "id_name" : "column",
       "type": "column"
     },
