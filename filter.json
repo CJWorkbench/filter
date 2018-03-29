@@ -1,5 +1,5 @@
 {
-  "name": "Filter",
+  "name": "Filter by",
   "id_name": "filter",
   "description": "Keep or drop rows by condition",
   "category" : "Analyze",
