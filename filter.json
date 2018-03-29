@@ -49,7 +49,7 @@
       }
     },
     {
-      "name": "Keep or drop",
+      "name": "",
       "id_name": "keep",
       "type": "menu",
       "menu_items": "Keep|Drop",
