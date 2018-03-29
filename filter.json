@@ -1,12 +1,12 @@
 {
-  "name": "Filter",
+  "name": "Filter by",
   "id_name": "filter",
   "category" : "Analyze",
   "icon": "filter",
   "help_url":"modules/analyse/filter",
   "parameters": [
     {
-      "name": "by",
+      "name": "",
       "id_name" : "column",
       "type": "column"
     },
