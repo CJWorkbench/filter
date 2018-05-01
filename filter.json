@@ -8,7 +8,7 @@
     {
       "name": "",
       "id_name" : "column",
-      "placeholder":"Choose column to filter by",
+      "placeholder":"Select column to filter by",
       "type": "column"
     },
     {
