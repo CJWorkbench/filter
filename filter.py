@@ -75,29 +75,28 @@ def render(table, params):
         if cond=='Text contains':
             case_sensitive = params['casesensitive']
             regex = params['regex']
-            keeprows = table[col].fillna('').astype(str).str.contains(val, case=case_sensitive, regex=regex)   # == True to handle None return on None column values
+            # keeprows = matching, not NaN
+            keeprows = table[col].str.contains(val, case=case_sensitive,
+                                               regex=regex) == True
 
         elif cond=='Text does not contain':
             case_sensitive = params['casesensitive']
             regex = params['regex']
-            keeprows = ~table[col].fillna('').astype(str).str.contains(val, case=case_sensitive, regex=regex)
+            # keeprows = not matching, allow NaN
+            keeprows = table[col].str.contains(val, case=case_sensitive,
+                                               regex=regex) != True
 
         elif cond=='Text is exactly':
             case_sensitive = params['casesensitive']
             regex = params['regex']
             if regex:
-                keeprows = table[col].fillna('').astype(str).str.match(val, case=case_sensitive)
+                keeprows = table[col].str.match(val,
+                                                case=case_sensitive) == True
             else:
                 if case_sensitive:
                     keeprows = (table[col] == val)
                 else:
-                    try:
-                        # If value is a number, coerce column to number and see what we've got
-                        num_val = float(val)
-                        keeprows = (pd.to_numeric(table[col].fillna('')) == num_val)
-                    except:
-                        # If the conversion fails, then it's a string. Compare lowercase results
-                        keeprows = (table[col].fillna('').astype(str).str.lower().str.strip() == str(val).lower().strip())
+                    keeprows = (table[col].str.lower() == val.lower())
 
         elif cond=='Cell is empty':
             keeprows = table[col].isnull()
@@ -133,6 +132,12 @@ def render(table, params):
             return table[keeprows]
         else:
             return table[~keeprows]
+
+    except AttributeError as err:
+        if str(err).startswith('Can only use .str accessor with string'):
+            return f'Column {col} is not text'
+        else:
+            raise
 
     except ValueError as e: # capture datevals exceptions
         return str(e)       # string return type means error

@@ -1,5 +1,7 @@
 import unittest
+import numpy as np
 import pandas as pd
+from pandas.testing import assert_frame_equal
 from filter import render
 
 # turn menu strings into indices for parameter dictionary
@@ -18,10 +20,10 @@ class TestFilter(unittest.TestCase):
         # Test data includes some partially and completely empty rows because this tends to freak out Pandas
         self.table = pd.DataFrame(
             [['fred', 2, 3, 'round', '2018-1-12'],
-             ['frederson', 5, None, 'square', '2018-1-12 08:15'],
-             [None, None, None, None, None],
+             ['frederson', 5, np.nan, 'square', '2018-1-12 08:15'],
+             [np.nan, np.nan, np.nan, np.nan, np.nan],
              ['maggie', 8, 10, 'Round', '2015-7-31'],
-             ['Fredrick', 5, None, 'square', '2018-3-12']],
+             ['Fredrick', 5, np.nan, 'square', '2018-3-12']],
             columns=['a', 'b', 'c', 'd', 'date'])
 
     def test_no_column(self):
@@ -107,7 +109,7 @@ class TestFilter(unittest.TestCase):
         }
         out = render(self.table, params)
         ref = self.table[[False, False, True, True, False]]
-        self.assertTrue(out.equals(ref))
+        assert_frame_equal(out, ref)
 
         # Case-sensitive, no regex, keep
         params = {
@@ -173,7 +175,7 @@ class TestFilter(unittest.TestCase):
         ref = self.table[[True, False, False, True, False]]
         self.assertTrue(out.equals(ref))
 
-        # Do numeric equals on a numeric column
+        # Refuse numeric equals on a numeric column
         params = {'column': 'b',
                   'condition': menu.index('Text is exactly'),
                   'casesensitive': False,
@@ -181,8 +183,7 @@ class TestFilter(unittest.TestCase):
                   'value': 5,
                   'keep': keepmenu.index('Keep')}
         out = render(self.table, params)
-        ref = self.table[[False, True, False, False, True]]
-        self.assertTrue(out.equals(ref))
+        self.assertEqual(out, 'Column b is not text')
 
     def test_empty(self):
         params = {'column': 'c', 'condition': menu.index(
@@ -247,6 +248,21 @@ class TestFilter(unittest.TestCase):
         }
         out = render(self.table, params)
         self.assertTrue(isinstance(out, str))  # should return error message
+
+    def test_category_equals(self):
+        table = pd.DataFrame({'A': ['foo', np.nan, 'bar']}, dtype='category')
+        params = {
+            'column': 'A',
+            'condition': menu.index('Text is exactly'),
+            'value': 'foo',
+            'casesensitive': True,
+            'regex': False,
+        }
+        out = render(table, params)
+        assert_frame_equal(
+            out,
+            pd.DataFrame({'A': ['foo']}, dtype=table['A'].dtype)
+        )
 
     def test_greater(self):
         # edge case, first row has b=2
