@@ -259,6 +259,8 @@ class TestFilter(unittest.TestCase):
             'regex': False,
         }
         out = render(table, params)
+        # Output is categorical with [foo, bar] categories. We _could_ remove
+        # the unused category, but there's no value added there.
         assert_frame_equal(
             out,
             pd.DataFrame({'A': ['foo']}, dtype=table['A'].dtype)
