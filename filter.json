@@ -59,6 +59,7 @@
         "invert":true,
         "id_name": "condition",
         "value": "Select"
+      }
     }
   ]
 }
