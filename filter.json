@@ -51,7 +51,7 @@
     },
     {
       "name" : "",
-      "id_name" : "drop_or_keep",
+      "id_name" : "keep",
       "type" : "radio",
       "radio_items" : "Delete|Keep",
       "default": "1",
