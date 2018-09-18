@@ -60,8 +60,8 @@ def render(table, params):
     if cond == 'Select':
         return table
 
-    # get the keep/drop condition
-    keeptext = 'Keep|Drop'
+    # get the keep/Delete condition
+    keeptext = 'Keep|Delete'
     keepmenu = keeptext.split('|')
     keepcond = keepmenu[keep]
 
