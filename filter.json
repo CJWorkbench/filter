@@ -52,7 +52,7 @@
     {
       "name" : "",
       "id_name" : "keep",
-      "type" : "checkbox",
+      "type" : "radio",
       "radio_items" : "Keep|Drop",
       "default": "1",
       "visible_if": {
