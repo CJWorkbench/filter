@@ -53,7 +53,7 @@
       "name" : "",
       "id_name" : "keep",
       "type" : "radio",
-      "radio_items" : "Keep|Drop",
+      "radio_items" : "Keep|Delete",
       "default": "1",
       "visible_if": {
         "invert":true,
