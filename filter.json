@@ -54,7 +54,7 @@
       "id_name" : "keep",
       "type" : "radio",
       "radio_items" : "Keep|Delete",
-      "default": "1",
+      "default": "0",
       "visible_if": {
         "invert":true,
         "id_name": "condition",
