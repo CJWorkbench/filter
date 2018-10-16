@@ -4,7 +4,7 @@
   "category" : "Analyze",
   "icon": "filter",
   "help_url":"modules/analyse/filter",
-  "description": "Filter columns by using conditions such as 'Contains' 'Greater than' or 'Date is after'.",
+  "description": "Filter columns using a condition.",
   "parameters": [
     {
       "name": "",
