@@ -185,10 +185,10 @@ class TestFilter(unittest.TestCase):
                   'condition': menu.index('Text is exactly'),
                   'casesensitive': False,
                   'regex': False,
-                  'value': 5,
+                  'value': '5',
                   'keep': keepmenu.index('Keep')}
         out = render(self.table, params)
-        self.assertEqual(out, 'Column b is not text')
+        self.assertEqual(out, 'Column is not text. Please convert to text.')
 
     def test_empty(self):
         params = {'column': 'c', 'condition': menu.index(
@@ -357,6 +357,12 @@ class TestFilter(unittest.TestCase):
         out = render(self.table, params)
         ref = self.table[[False, True, False, False, True]]
         self.assertTrue(out.equals(ref))
+
+    def test_compare_int_with_str_condition(self):
+        params = {'column': 'A', 'condition': menu.index('Text is exactly'),
+                  'value': ' ', 'casesensitive': False, 'regex': False}
+        out = render(pd.DataFrame({'A': []}), params)
+        self.assertEqual(out, 'Column is not text. Please convert to text.')
 
 
 if __name__ == '__main__':
