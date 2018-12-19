@@ -144,7 +144,7 @@ def render(table, params):
             keeprows = (datevals(table, col) > dateval(val))
 
         else:
-            return 'Please choose a condition'
+            raise RuntimeError('Unknown cond')
 
         if keep:
             return table[keeprows]
