@@ -23,6 +23,47 @@ Menu = (
 )
 
 
+# simple date coercion logic for strings and columns
+def dateval(val):
+    if val.strip() == '':
+        raise ValueError(str(val) + 'Please enter a date')
+    d = pd.to_datetime(val, errors='coerce')  # coerce turns invalid dates into NaT
+    if d is pd.NaT:
+        raise ValueError(str(val) + ' is not a valid date')
+    return d
+
+# Simple coercion logic to numbers
+def datevals(table, col):
+    # numeric columns, just... no. Never really want to interpret as seconds since 1970
+    if table[col].dtype == 'int64' or table[col].dtype == 'float64':
+        raise ValueError('Column %s is not dates' % col)
+
+    # see if Pandas can make dates out of this column
+    try:
+        dates = pd.to_datetime(table[col])
+    except (ValueError, TypeError):
+        raise ValueError('Column %s is not dates' % col)
+
+    return dates
+
+def numericval(val):
+    numval = None
+    try:
+        numval = float(val)
+    except:
+        raise ValueError(str(val) + ' is not a valid number')
+
+    return numval
+
+def numericvals(table, col):
+    try:
+        vals = pd.to_numeric(table[col], errors='raise')
+    except:
+        raise ValueError('Column %s is not numeric' % col)
+
+    return vals
+
+
 def render(table, params):
     cond = Menu[params['condition']]
     keep = params.get('keep', 0) == 0
@@ -38,46 +79,6 @@ def render(table, params):
         return 'Please choose a condition'
 
     keeprows = None
-
-    # simple date coercion logic for strings and columns
-    def dateval(val):
-        if val.strip() == '':
-            raise ValueError(str(val) + 'Please enter a date')
-        d = pd.to_datetime(val, errors='coerce')  # coerce turns invalid dates into NaT
-        if d is pd.NaT:
-            raise ValueError(str(val) + ' is not a valid date')
-        return d
-
-    # Simple coercion logic to numbers
-    def datevals(table, col):
-        # numeric columns, just... no. Never really want to interpret as seconds since 1970
-        if table[col].dtype == 'int64' or table[col].dtype == 'float64':
-            raise ValueError('Column %s is not dates' % col)
-
-        # see if Pandas can make dates out of this column
-        try:
-            dates = pd.to_datetime(table[col])
-        except (ValueError, TypeError):
-            raise ValueError('Column %s is not dates' % col)
-
-        return dates
-
-    def numericval(val):
-        numval = None
-        try:
-            numval = float(val)
-        except:
-            raise ValueError(str(val) + ' is not a valid number')
-
-        return numval
-
-    def numericvals(table, col):
-        try:
-            vals = pd.to_numeric(table[col], errors='raise')
-        except:
-            raise ValueError('Column %s is not numeric' % col)
-
-        return vals
 
     # all conditions except empty cell should NOP if no value
     if cond != 'Cell is empty' and cond != 'Cell is not empty':
