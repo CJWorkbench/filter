@@ -1,13 +1,41 @@
+import pandas as pd
+
+# keep the switch statment in sync with the json by copying it here
+Menu = (
+    'Select',
+    None,  # ""
+    'Text contains',
+    'Text does not contain',
+    'Text is exactly',
+    None,
+    'Cell is empty',
+    'Cell is not empty',
+    None,
+    'Equals',
+    'Greater than',
+    'Greater than or equals',
+    'Less than',
+    'Less than or equals',
+    None,
+    'Date is',
+    'Date is before',
+    'Date is after',
+)
+
+
 def render(table, params):
-    cond = params['condition']
-    keep = params.get('keep', 0)
+    cond = Menu[params['condition']]
+    keep = params.get('keep', 0) == 0
     val = params.get('value', '')
     col = params.get('column', '')
 
-    if col == '':
+    if not col:
         return table
 
-    import pandas as pd
+    if cond == 'Select':
+        return table
+    if cond is None:
+        return 'Please choose a condition'
 
     keeprows = None
 
@@ -51,23 +79,9 @@ def render(table, params):
 
         return vals
 
-    # keep the switch statment in sync with the json by copying it here
-    # This way we can switch on menu values not indices
-    menutext = "Select||Text contains|Text does not contain|Text is exactly||Cell is empty|Cell is not empty||Equals|Greater than|Greater than or equals|Less than|Less than or equals||Date is|Date is before|Date is after"
-    menu = menutext.split('|')
-    cond = menu[cond]
-
-    if cond == 'Select':
-        return table
-
-    # get the keep/drop condition
-    keeptext = 'Keep|Drop'
-    keepmenu = keeptext.split('|')
-    keepcond = keepmenu[keep]
-
     # all conditions except empty cell should NOP if no value
-    if cond!='Cell is empty' and cond!='Cell is not empty':
-        if val=='':
+    if cond != 'Cell is empty' and cond != 'Cell is not empty':
+        if not val:
             return table
 
     try:
@@ -128,7 +142,10 @@ def render(table, params):
         elif cond=='Date is after':
             keeprows = (datevals(table, col) > dateval(val))
 
-        if keepcond == 'Keep':
+        else:
+            return 'Please choose a condition'
+
+        if keep:
             return table[keeprows]
         else:
             return table[~keeprows]
@@ -140,6 +157,7 @@ def render(table, params):
             raise
 
     except ValueError as e: # capture datevals exceptions
+        # TODO be far more specific when catching an exception here
         return str(e)       # string return type means error
 
     return table

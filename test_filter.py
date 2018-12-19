@@ -44,6 +44,11 @@ class TestFilter(unittest.TestCase):
         out = render(self.table, params)
         self.assertTrue(out.equals(self.table))  # should NOP if no value
 
+    def test_illegal_value(self):
+        params = {'column': 'a', 'condition': 1, 'value': ''}
+        out = render(self.table, params)
+        self.assertEqual(out, 'Please choose a condition')
+
     def test_contains(self):
         # Case-insensitive, no regex, keep
         params = {
