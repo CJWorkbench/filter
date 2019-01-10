@@ -1,4 +1,5 @@
 import functools
+from typing import Any, Dict
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
 
@@ -78,7 +79,7 @@ def value_to_datetime(value):
         return pd.to_datetime(value)
     except ValueError:
         raise UserVisibleError(
-            'Value is not a date. Please enter a dates and time.'
+            'Value is not a date. Please enter a date and time.'
         )
 
 
@@ -117,34 +118,49 @@ def type_date(f):
 @type_text
 def mask_text_contains(series, text, params):
     case_sensitive = params['casesensitive']
-    regex = params['regex']
     # keeprows = matching, not NaN
-    contains = series.str.contains(text, case=case_sensitive, regex=regex)
+    contains = series.str.contains(text, case=case_sensitive, regex=False)
+    return contains == True  # noqa: E712
+
+
+@type_text
+def mask_text_contains_regex(series, text, params):
+    case_sensitive = params['casesensitive']
+    # keeprows = matching, not NaN
+    contains = series.str.contains(text, case=case_sensitive, regex=True)
     return contains == True  # noqa: E712
 
 
 @type_text
 def mask_text_does_not_contain(series, text, params):
-            # keeprows = not matching, allow NaN
+    # keeprows = not matching, allow NaN
     case_sensitive = params['casesensitive']
-    regex = params['regex']
-    # keeprows = matching, not NaN
-    contains = series.str.contains(text, case=case_sensitive, regex=regex)
+    contains = series.str.contains(text, case=case_sensitive, regex=False)
+    return contains != True  # noqa: E712
+
+
+@type_text
+def mask_text_does_not_contain_regex(series, text, params):
+    # keeprows = not matching, allow NaN
+    case_sensitive = params['casesensitive']
+    contains = series.str.contains(text, case=case_sensitive, regex=True)
     return contains != True  # noqa: E712
 
 
 @type_text
 def mask_text_is_exactly(series, text, params):
     case_sensitive = params['casesensitive']
-    regex = params['regex']
-    if regex:
-        matches = series.str.match(text, case=case_sensitive)
-        return matches == True  # noqa: E712
+    if case_sensitive:
+        return series == text
     else:
-        if case_sensitive:
-            return series == text
-        else:
-            return series.str.lower() == text.lower()
+        return series.str.lower() == text.lower()
+
+
+@type_text
+def mask_text_is_exactly_regex(series, text, params):
+    case_sensitive = params['casesensitive']
+    matches = series.str.match(text, case=case_sensitive)
+    return matches == True  # noqa: E712
 
 
 def mask_cell_is_empty(series, val, params):
@@ -203,6 +219,10 @@ MaskGenerators = (
     mask_text_does_not_contain,
     mask_text_is_exactly,
     None,
+    mask_text_contains_regex,  # 'Text contains regex'...
+    mask_text_does_not_contain_regex,
+    mask_text_is_exactly_regex,
+    None,
     mask_cell_is_empty,
     mask_cell_is_not_empty,
     None,
@@ -216,6 +236,47 @@ MaskGenerators = (
     mask_date_is_before,
     mask_date_is_after,
 )
+
+
+def migrate_params_v0_to_v1(params: Dict[str, Any]) -> Dict[str, Any]:
+    is_regex = params['regex']
+    condition = params['condition']
+
+    # v0:
+    # Select|| (0,1)
+    # Text contains|Text does not contain|Text is exactly|| (2, 3, 4, 5)
+    # Cell is empty|Cell is not empty|| (6, 7, 8)
+    # Equals|Greater than|Greater than or equals|Less than|Less than or
+    #   equals|| (9, 10, 11, 12, 13, 14)
+    # Date is|Date is before|Date is after (15, 16, 17)
+    #
+    # v1:
+    # Select|| (0,1)
+    # Text contains|Text does not contain|Text is exactly|| (2, 3, 4, 5)
+    # Text contains regex|Text does not contain regex|Text matches regex
+    #   exactly|| (6, 7, 8, 9)
+    # Cell is empty|Cell is not empty|| (10, 11, 12)
+    # Equals|Greater than|Greater than or equals|Less than|Less than or
+    #   equals|| (13, 14, 15, 16, 17, 18)
+    # Date is|Date is before|Date is after (19, 20, 21)
+
+    if is_regex and condition in (2, 3, 4, 5):
+        condition += 4  # 2 => 6, 3 => 7, ...
+    elif condition > 5:
+        condition += 4
+
+    ret = dict(params)
+    del ret['regex']
+    ret['condition'] = condition
+    return ret
+
+
+def migrate_params(params: Dict[str, Any]):
+    # v0: 'regex' is a checkbox. Migrate it to a menu entry.
+    if 'regex' in params:
+        params = migrate_params_v0_to_v1(params)
+
+    return params
 
 
 def render(table, params):

@@ -16,8 +16,8 @@
       "name": "Condition",
       "id_name" : "condition",
       "type" : "menu",
-      "menu_items" : "Select||Text contains|Text does not contain|Text is exactly||Cell is empty|Cell is not empty||Equals|Greater than|Greater than or equals|Less than|Less than or equals||Date is|Date is before|Date is after",
-      "default": "0"
+      "menu_items" : "Select||Text contains|Text does not contain|Text is exactly||Text contains regex|Text does not contain regex|Text matches regex exactly||Cell is empty|Cell is not empty||Equals|Greater than|Greater than or equals|Less than|Less than or equals||Date is|Date is before|Date is after",
+      "default": 0
     },
     {
       "name": "",
@@ -37,17 +37,7 @@
       "default": "False",
       "visible_if": {
         "id_name": "condition",
-        "value": "Text contains|Text does not contain|Text is exactly"
-      }
-    },
-    {
-      "name": "Regex",
-      "id_name": "regex",
-      "type": "checkbox",
-      "default": "False",
-      "visible_if": {
-        "id_name": "condition",
-        "value": "Text contains|Text does not contain|Text is exactly"
+        "value": "Text contains|Text does not contain|Text is exactly|Text contains regex|Text does not contain regex|Text matches regex exactly"
       }
     },
     {
