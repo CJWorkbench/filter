@@ -15,7 +15,7 @@ def simple_params(colname: str, condition: str, value: str,
                   case_sensitive: bool=False,
                   keep: bool=True) -> Dict[str, Any]:
     return {
-        'keep': keep,
+        'keep': 0 if keep else 1,   # index corresponds to kepp/drop radio buttons
         'filters': {
             'operator': 'and',
             'filters': [
@@ -256,6 +256,7 @@ class TestRender(unittest.TestCase):
         params = simple_params('A', 'text_is_exactly', 'foo',
                                case_sensitive=True)
         result = render(table, params)
+
         # Output is categorical with [foo, bar] categories. We _could_ remove
         # the unused category, but there's no value added there.
         assert_frame_equal(
@@ -344,7 +345,7 @@ class TestRender(unittest.TestCase):
     def test_two_filters_and(self):
         table = pd.DataFrame({'A': [1, 2, 3], 'B': [2, 3, 4]})
         params = {
-            'keep': True,
+            'keep': 0,
             'filters': {
                 'operator': 'and',
                 'filters': [
@@ -379,7 +380,7 @@ class TestRender(unittest.TestCase):
     def test_two_filters_or(self):
         table = pd.DataFrame({'A': [1, 2, 3], 'B': [2, 3, 4]})
         params = {
-            'keep': True,
+            'keep': 0,
             'filters': {
                 'operator': 'or',
                 'filters': [
@@ -414,7 +415,7 @@ class TestRender(unittest.TestCase):
     def test_two_subfilters_and(self):
         table = pd.DataFrame({'A': [1, 2, 3], 'B': [2, 3, 4]})
         params = {
-            'keep': True,
+            'keep': 0,
             'filters': {
                 'operator': 'or',
                 'filters': [
@@ -444,7 +445,7 @@ class TestRender(unittest.TestCase):
     def test_two_subfilters_or(self):
         table = pd.DataFrame({'A': [1, 2, 3], 'B': [2, 3, 4]})
         params = {
-            'keep': True,
+            'keep': 0,
             'filters': {
                 'operator': 'and',
                 'filters': [
