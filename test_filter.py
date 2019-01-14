@@ -1,4 +1,5 @@
 import unittest
+from typing import Any, Dict
 import numpy as np
 import pandas as pd
 from pandas.testing import assert_frame_equal
@@ -9,9 +10,29 @@ from filter import render, migrate_params
 menutext = "Select||Text contains|Text does not contain|Text is exactly||Text contains regex|Text does not contain regex|Text matches regex exactly||Cell is empty|Cell is not empty||Equals|Greater than|Greater than or equals|Less than|Less than or equals||Date is|Date is before|Date is after||Filter by text"
 menu = menutext.split('|')
 
-# keep menu
-keeptext = 'Keep|Drop'
-keepmenu = keeptext.split('|')
+
+def simple_params(colname: str, condition: str, value: str,
+                  case_sensitive: bool=False,
+                  keep: bool=True) -> Dict[str, Any]:
+    return {
+        'keep': 0 if keep else 1,   # index corresponds to kepp/drop radio buttons
+        'filters': {
+            'operator': 'and',
+            'filters': [
+                {
+                    'operator': 'and',
+                    'subfilters': [
+                        {
+                            'colname': colname,
+                            'condition': condition,
+                            'value': value,
+                            'case_sensitive': case_sensitive,
+                        },
+                    ],
+                },
+            ],
+        },
+    }
 
 
 class TestMigrateParams(unittest.TestCase):
@@ -25,14 +46,7 @@ class TestMigrateParams(unittest.TestCase):
                 'keep': 0,  # "Keep"
                 'regex': False,
             }),
-            {
-                # Same thing, minux 'regex'
-                'column': 'A',
-                'condition': 0,
-                'value': 'value',
-                'casesensitive': False,
-                'keep': 0,
-            }
+            simple_params('A', '', 'value')
         )
 
     def test_v0_text_contains_without_regex_stays_text_contains(self):
@@ -45,14 +59,7 @@ class TestMigrateParams(unittest.TestCase):
                 'keep': 0,  # "Keep"
                 'regex': False,
             }),
-            {
-                # Same thing, minux 'regex'
-                'column': 'A',
-                'condition': 2,
-                'value': 'value',
-                'casesensitive': False,
-                'keep': 0,
-            }
+            simple_params('A', 'text_contains', 'value')
         )
 
     def test_v0_text_contains_regex_changes_condition(self):
@@ -65,13 +72,7 @@ class TestMigrateParams(unittest.TestCase):
                 'keep': 0,  # "Keep"
                 'regex': True,
             }),
-            {
-                'column': 'A',
-                'condition': 6,  # "Text contains regex"
-                'value': 'value',
-                'casesensitive': False,
-                'keep': 0,
-            }
+            simple_params('A', 'text_contains_regex', 'value')
         )
 
     def test_v0_cell_is_empty_changes_number(self):
@@ -84,13 +85,7 @@ class TestMigrateParams(unittest.TestCase):
                 'keep': 0,  # "Keep"
                 'regex': True,
             }),
-            {
-                'column': 'A',
-                'condition': 10,  # "Cell is empty" in new menu
-                'value': 'value',
-                'casesensitive': False,
-                'keep': 0,
-            }
+            simple_params('A', 'cell_is_empty', 'value')
         )
 
 
@@ -106,234 +101,162 @@ class TestRender(unittest.TestCase):
             columns=['a', 'b', 'c', 'd', 'date'])
 
     def test_no_column(self):
-        params = {'column': '', 'condition': 0, 'value': ''}
-        result = render(self.table, params)
-        assert_frame_equal(result, self.table)
-
-    def test_no_condition(self):
-        params = {
-            'column': 'a',
-            'condition': menu.index('Select')
-        }
+        params = simple_params('', 'text_contains', 'fred')
         result = render(self.table, params)
         assert_frame_equal(result, self.table)
 
     def test_no_value(self):
-        params = {'column': 'a', 'condition': 0, 'value': ''}
+        params = simple_params('a', 'text_contains', '')
         result = render(self.table, params)
         assert_frame_equal(result, self.table)
 
-    def test_illegal_value(self):
-        params = {'column': 'a', 'condition': 1, 'value': ''}
+    def test_illegal_condition(self):
+        params = simple_params('a', '', 'value')
         result = render(self.table, params)
-        self.assertEqual(result, 'Please choose a condition')
+        assert_frame_equal(result, self.table)
 
     def test_contains_case_insensitive(self):
-        params = {
-            'column': 'a',
-            'condition': menu.index('Text contains'),
-            'value': 'fred',
-            'casesensitive': False,
-            'keep': keepmenu.index('Keep')
-        }
+        params = simple_params('a', 'text_contains', 'fred',
+                               case_sensitive=False)
         result = render(self.table, params)
-        expected = self.table[[True, True, False, False, True]]
+        expected = self.table[[True, True, False, False,
+                               True]].reset_index(drop=True)
         assert_frame_equal(result, expected)
 
     def test_contains_case_sensitive(self):
-        params = {
-            'column': 'a',
-            'condition': menu.index('Text contains'),
-            'value': 'fred',
-            'casesensitive': True,
-            'keep': keepmenu.index('Keep')
-        }
+        params = simple_params('a', 'text_contains', 'fred',
+                               case_sensitive=True)
         result = render(self.table, params)
-        expected = self.table[[True, True, False, False, False]]
+        expected = self.table[[True, True, False, False,
+                               False]].reset_index(drop=True)
         assert_frame_equal(result, expected)
 
     def test_contains_regex(self):
-        params = {
-            'column': 'a',
-            'condition': menu.index('Text contains regex'),
-            'value': 'f[a-zA-Z]+d',
-            'casesensitive': True,
-            'keep': keepmenu.index('Keep')
-        }
+        params = simple_params('a', 'text_contains_regex', 'f[a-zA-Z]+d',
+                               case_sensitive=True)
         result = render(self.table, params)
-        expected = self.table[[True, True, False, False, False]]
+        expected = self.table[[True, True, False, False,
+                               False]].reset_index(drop=True)
         assert_frame_equal(result, expected)
 
     def test_contains_regex_drop(self):
-        params = {
-            'column': 'a',
-            'condition': menu.index('Text contains regex'),
-            'value': 'f[a-zA-Z]+d',
-            'casesensitive': True,
-            'keep': keepmenu.index('Drop')
-        }
+        params = simple_params('a', 'text_contains_regex', 'f[a-zA-Z]+d',
+                               case_sensitive=True, keep=False)
         result = render(self.table, params)
-        expected = self.table[[False, False, True, True, True]]
+        expected = self.table[[False, False, True, True,
+                               True]].reset_index(drop=True)
         assert_frame_equal(result, expected)
 
     def test_not_contains(self):
-        params = {
-            'column': 'a',
-            'condition': menu.index('Text does not contain'),
-            'value': 'fred',
-            'casesensitive': False,
-            'keep': keepmenu.index('Keep')
-        }
+        params = simple_params('a', 'text_does_not_contain', 'fred',
+                               case_sensitive=False)
         result = render(self.table, params)
-        expected = self.table[[False, False, True, True, False]]
+        expected = self.table[[False, False, True, True,
+                               False]].reset_index(drop=True)
         assert_frame_equal(result, expected)
 
     def test_not_contains_case_sensitive(self):
-        params = {
-            'column': 'a',
-            'condition': menu.index('Text does not contain'),
-            'value': 'fred',
-            'casesensitive': True,
-            'keep': keepmenu.index('Keep')
-        }
+        params = simple_params('a', 'text_does_not_contain', 'fred',
+                               case_sensitive=True)
         result = render(self.table, params)
-        expected = self.table[[False, False, True, True, True]]
+        expected = self.table[[False, False, True, True,
+                               True]].reset_index(drop=True)
         assert_frame_equal(result, expected)
 
     def test_not_contains_regex(self):
-        params = {
-            'column': 'a',
-            'condition': menu.index('Text does not contain regex'),
-            'value': 'f[a-zA-Z]+d',
-            'casesensitive': True,
-            'keep': keepmenu.index('Keep')
-        }
+        params = simple_params('a', 'text_does_not_contain_regex',
+                               'f[a-zA-Z]+d', case_sensitive=True)
         result = render(self.table, params)
-        expected = self.table[[False, False, True, True, True]]
+        expected = self.table[[False, False, True, True,
+                               True]].reset_index(drop=True)
         assert_frame_equal(result, expected)
 
     def test_not_contains_regex_drop(self):
-        params = {
-            'column': 'a',
-            'condition': menu.index('Text does not contain regex'),
-            'value': 'f[a-zA-Z]+d',
-            'casesensitive': True,
-            'keep': keepmenu.index('Drop')
-        }
+        params = simple_params('a', 'text_does_not_contain_regex',
+                               'f[a-zA-Z]+d', case_sensitive=True,
+                               keep=False)
         result = render(self.table, params)
-        expected = self.table[[True, True, False, False, False]]
+        expected = self.table[[True, True, False, False,
+                               False]].reset_index(drop=True)
         assert_frame_equal(result, expected)
 
     def test_exactly(self):
-        params = {
-            'column': 'a',
-            'condition': menu.index('Text is exactly'),
-            'value': 'fred',
-            'casesensitive': True,
-            'keep': keepmenu.index('Keep')
-        }
+        params = simple_params('a', 'text_is_exactly', 'fred',
+                               case_sensitive=True)
         result = render(self.table, params)
-        expected = self.table[[True, False, False, False, False]]
+        expected = self.table[[True, False, False, False,
+                               False]].reset_index(drop=True)
         assert_frame_equal(result, expected)
 
     def test_exactly_regex(self):
-        params = {
-            'column': 'd',
-            'condition': menu.index('Text matches regex exactly'),
-            'value': 'round',
-            'casesensitive': False,
-            'keep': keepmenu.index('Keep')
-        }
+        params = simple_params('d', 'text_is_exactly_regex', 'round')
         result = render(self.table, params)
-        expected = self.table[[True, False, False, True, False]]
+        expected = self.table[[True, False, False, True,
+                               False]].reset_index(drop=True)
         assert_frame_equal(result, expected)
 
     def test_exactly_non_text_column(self):
-        params = {'column': 'b',
-                  'condition': menu.index('Text is exactly'),
-                  'casesensitive': False,
-                  'value': '5',
-                  'keep': keepmenu.index('Keep')}
+        params = simple_params('b', 'text_is_exactly', '5')
         result = render(self.table, params)
         self.assertEqual(result, 'Column is not text. Please convert to text.')
 
     def test_empty(self):
-        params = {'column': 'c', 'condition': menu.index('Cell is empty'),
-                  'value': 'nonsense'}
+        params = simple_params('c', 'cell_is_empty', 'nonsense')
         result = render(self.table, params)
-        expected = self.table[[False, True, True, False, True]]
+        expected = self.table[[False, True, True, False,
+                               True]].reset_index(drop=True)
         assert_frame_equal(result, expected)
 
         # should not require value
-        params = {'column': 'c', 'condition': menu.index('Cell is empty'),
-                  'value': ''}
+        params = simple_params('c', 'cell_is_empty', '')
         result = render(self.table, params)
         assert_frame_equal(result, expected)
 
     def test_not_empty(self):
-        params = {'column': 'c', 'condition': menu.index('Cell is not empty'),
-                  'value': 'nonsense'}
+        params = simple_params('c', 'cell_is_not_empty', 'nonsense')
         result = render(self.table, params)
-        expected = self.table[[True, False, False, True, False]]
+        expected = self.table[[True, False, False, True,
+                               False]].reset_index(drop=True)
         assert_frame_equal(result, expected)
 
         # should not require value
-        params = {'column': 'c', 'condition': menu.index('Cell is not empty'),
-                  'value': ''}
+        params = simple_params('c', 'cell_is_not_empty', '')
         result = render(self.table, params)
         assert_frame_equal(result, expected)
 
     def test_equals(self):
         # working as intended
-        params = {
-            'column': 'c',
-            'condition': menu.index('Equals'),
-            'value': '3'
-        }
+        params = simple_params('c', 'number_equals', '3')
         result = render(self.table, params)
-        expected = self.table[[True, False, False, False, False]]
+        expected = self.table[[True, False, False, False,
+                               False]].reset_index(drop=True)
         assert_frame_equal(result, expected)
 
     def test_equals_non_number_errors(self):
         # non-numeric column should return error message
-        params = {
-            'column': 'a',
-            'condition': menu.index('Equals'),
-            'value': '3'
-        }
+        params = simple_params('a', 'number_equals', '3')
         result = render(self.table, params)
         self.assertEqual(result,
                          'Column is not numbers. Please convert to numbers.')
 
         # non-numeric column should return error message
-        params = {
-            'column': 'date',
-            'condition': menu.index('Equals'),
-            'value': '3'
-        }
+        params = simple_params('date', 'number_equals', '3')
         result = render(self.table, params)
         self.assertEqual(result,
                          'Column is not numbers. Please convert to numbers.')
 
         # non-numeric value should return error message
-        params = {
-            'column': 'c',
-            'condition': menu.index('Equals'),
-            'value': 'gibberish'
-        }
+        params = simple_params('c', 'number_equals', 'gibberish')
         result = render(self.table, params)
         self.assertEqual(result,
                          'Value is not a number. Please enter a valid number.')
 
     def test_category_equals(self):
         table = pd.DataFrame({'A': ['foo', np.nan, 'bar']}, dtype='category')
-        params = {
-            'column': 'A',
-            'condition': menu.index('Text is exactly'),
-            'value': 'foo',
-            'casesensitive': True,
-        }
+        params = simple_params('A', 'text_is_exactly', 'foo',
+                               case_sensitive=True)
         result = render(table, params)
+
         # Output is categorical with [foo, bar] categories. We _could_ remove
         # the unused category, but there's no value added there.
         assert_frame_equal(
@@ -343,99 +266,211 @@ class TestRender(unittest.TestCase):
 
     def test_greater(self):
         # edge case, first row has b=2
-        params = {
-            'column': 'b',
-            'condition': menu.index('Greater than'),
-            'value': '2'
-        }
+        params = simple_params('b', 'number_is_greater_than', '2')
         result = render(self.table, params)
-        expected = self.table[[False, True, False, True, True]]
+        expected = self.table[[False, True, False, True,
+                               True]].reset_index(drop=True)
         assert_frame_equal(result, expected)
 
     def test_greater_equals(self):
         # edge case, first row has b=2
-        params = {
-            'column': 'b',
-            'condition': menu.index('Greater than or equals'),
-            'value': '2'
-        }
+        params = simple_params('b', 'number_is_greater_than_or_equals', '2')
         result = render(self.table, params)
-        expected = self.table[[True, True, False, True, True]]
+        expected = self.table[[True, True, False, True,
+                               True]].reset_index(drop=True)
         assert_frame_equal(result, expected)
 
     def test_less(self):
         # edge case, second and last row has b=5
-        params = {
-            'column': 'b',
-            'condition': menu.index('Less than'),
-            'value': '5'
-        }
+        params = simple_params('b', 'number_is_less_than', '5')
         result = render(self.table, params)
-        expected = self.table[[True, False, False, False, False]]
+        expected = self.table[[True, False, False, False,
+                               False]].reset_index(drop=True)
         assert_frame_equal(result, expected)
 
     def test_less_equals(self):
         # edge case, second and last row has b=5
-        params = {
-            'column': 'b',
-            'condition': menu.index('Less than or equals'),
-            'value': '5'
-        }
+        params = simple_params('b', 'number_is_less_than_or_equals', '5')
         result = render(self.table, params)
-        expected = self.table[[True, True, False, False, True]]
+        expected = self.table[[True, True, False, False,
+                               True]].reset_index(drop=True)
         assert_frame_equal(result, expected)
 
     def test_date_is(self):
-        params = {
-            'column': 'date',
-            'condition': menu.index('Date is'),
-            'value': '2015-7-31'
-        }
+        params = simple_params('date', 'date_is', '2015-07-31')
         result = render(self.table, params)
-        expected = self.table[[False, False, False, True, False]]
+        expected = self.table[[False, False, False, True,
+                               False]].reset_index(drop=True)
         assert_frame_equal(result, expected)
 
     def test_bad_date(self):
         # columns that aren't dates -> error
-        params = {'column': 'a', 'condition': menu.index('Date is'),
-                  'value': '2015-7-31'}
+        params = simple_params('a', 'date_is', '2015-7-31')
         result = render(self.table, params)
         self.assertEqual(result,
                          'Column is not dates. Please convert to dates.')
 
-        params = {'column': 'b', 'condition': menu.index('Date is'),
-                  'value': '2015-7-31'}
+        params = simple_params('b', 'date_is', '2015-7-31')
         result = render(self.table, params)
         self.assertEqual(result,
                          'Column is not dates. Please convert to dates.')
 
-        # stirng that isn't a date -> error
-        params = {'column': 'date', 'condition': menu.index('Date is'),
-                  'value': 'gibberish'}
+        # string that isn't a date -> error
+        params = simple_params('date', 'date_is', 'gibberish')
         result = render(self.table, params)
         self.assertEqual(result,
                          'Value is not a date. Please enter a date and time.')
 
     def test_date_before(self):
-        params = {'column': 'date', 'condition': menu.index(
-            'Date is before'), 'value': '2016-7-31'}
+        params = simple_params('date', 'date_is_before', '2016-07-31')
         result = render(self.table, params)
-        expected = self.table[[False, False, False, True, False]]
+        expected = self.table[[False, False, False, True,
+                               False]].reset_index(drop=True)
         assert_frame_equal(result, expected)
 
     def test_date_after(self):
-        # edge case, first row is 2018-1-12 08:15 so after implied midnight of date without time
-        params = {'column': 'date', 'condition': menu.index(
-            'Date is after'), 'value': '2018-1-12'}
+        # edge case, first row is 2018-1-12 08:15 so after implied midnight of
+        # date without time
+        params = simple_params('date', 'date_is_after', '2018-01-12')
         result = render(self.table, params)
-        expected = self.table[[False, True, False, False, True]]
+        expected = self.table[[False, True, False, False,
+                               True]].reset_index(drop=True)
         assert_frame_equal(result, expected)
 
     def test_compare_int_with_str_condition(self):
-        params = {'column': 'A', 'condition': menu.index('Text is exactly'),
-                  'value': ' ', 'casesensitive': False}
+        params = simple_params('A', 'text_is_exactly', ' ')
         result = render(pd.DataFrame({'A': []}), params)
         self.assertEqual(result, 'Column is not text. Please convert to text.')
+
+    def test_two_filters_and(self):
+        table = pd.DataFrame({'A': [1, 2, 3], 'B': [2, 3, 4]})
+        params = {
+            'keep': 0,
+            'filters': {
+                'operator': 'and',
+                'filters': [
+                    {
+                        'operator': 'or',
+                        'subfilters': [
+                            {
+                                'colname': 'A',
+                                'condition': 'number_is_less_than',
+                                'value': 3,
+                                'case_sensitive': False,
+                            },
+                        ],
+                    },
+                    {
+                        'operator': 'or',
+                        'subfilters': [
+                            {
+                                'colname': 'B',
+                                'condition': 'number_is_greater_than',
+                                'value': 2,
+                                'case_sensitive': False,
+                            },
+                        ],
+                    },
+                ],
+            },
+        }
+        result = render(table, params)
+        assert_frame_equal(result, pd.DataFrame({'A': [2], 'B': [3]}))
+
+    def test_two_filters_or(self):
+        table = pd.DataFrame({'A': [1, 2, 3], 'B': [2, 3, 4]})
+        params = {
+            'keep': 0,
+            'filters': {
+                'operator': 'or',
+                'filters': [
+                    {
+                        'operator': 'and',
+                        'subfilters': [
+                            {
+                                'colname': 'A',
+                                'condition': 'number_is_less_than',
+                                'value': 2,
+                                'case_sensitive': False,
+                            },
+                        ],
+                    },
+                    {
+                        'operator': 'and',
+                        'subfilters': [
+                            {
+                                'colname': 'B',
+                                'condition': 'number_is_greater_than',
+                                'value': 3,
+                                'case_sensitive': False,
+                            },
+                        ],
+                    },
+                ],
+            },
+        }
+        result = render(table, params)
+        assert_frame_equal(result, pd.DataFrame({'A': [1, 3], 'B': [2, 4]}))
+
+    def test_two_subfilters_and(self):
+        table = pd.DataFrame({'A': [1, 2, 3], 'B': [2, 3, 4]})
+        params = {
+            'keep': 0,
+            'filters': {
+                'operator': 'or',
+                'filters': [
+                    {
+                        'operator': 'and',
+                        'subfilters': [
+                            {
+                                'colname': 'A',
+                                'condition': 'number_is_less_than',
+                                'value': 3,
+                                'case_sensitive': False,
+                            },
+                            {
+                                'colname': 'B',
+                                'condition': 'number_is_greater_than',
+                                'value': 2,
+                                'case_sensitive': False,
+                            },
+                        ],
+                    },
+                ],
+            },
+        }
+        result = render(table, params)
+        assert_frame_equal(result, pd.DataFrame({'A': [2], 'B': [3]}))
+
+    def test_two_subfilters_or(self):
+        table = pd.DataFrame({'A': [1, 2, 3], 'B': [2, 3, 4]})
+        params = {
+            'keep': 0,
+            'filters': {
+                'operator': 'and',
+                'filters': [
+                    {
+                        'operator': 'or',
+                        'subfilters': [
+                            {
+                                'colname': 'A',
+                                'condition': 'number_is_less_than',
+                                'value': 2,
+                                'case_sensitive': False,
+                            },
+                            {
+                                'colname': 'B',
+                                'condition': 'number_is_greater_than',
+                                'value': 3,
+                                'case_sensitive': False,
+                            },
+                        ],
+                    },
+                ],
+            },
+        }
+        result = render(table, params)
+        assert_frame_equal(result, pd.DataFrame({'A': [1, 3], 'B': [2, 4]}))
 
 
 if __name__ == '__main__':
