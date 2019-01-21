@@ -283,12 +283,12 @@ def migrate_params_v1_to_v2(params: Dict[str, Any]) -> Dict[str, Any]:
             'date_is',
             'date_is_before',
             'date_is_after',
-        ][params['condition']]
+        ][params.get('condition', 0)]
     except IndexError:
         condition = ''
 
     return {
-        'keep': params['keep'],
+        'keep': params.get('keep', 0),
         'filters': {
             'operator': 'and',
             'filters': [
@@ -298,8 +298,9 @@ def migrate_params_v1_to_v2(params: Dict[str, Any]) -> Dict[str, Any]:
                         {
                             'colname': params['column'],
                             'condition': condition,
-                            'value': params['value'],
-                            'case_sensitive': params['casesensitive']
+                            'value': params.get('value', ''),
+                            'case_sensitive': params.get('casesensitive',
+                                                         False),
                         }
                     ]
                 }
@@ -314,7 +315,7 @@ def migrate_params(params: Dict[str, Any]):
         params = migrate_params_v0_to_v1(params)
 
     # v1: just one condition. v2: op+filters, each containing op+subfilters
-    if 'condition' in params:
+    if 'column' in params:
         params = migrate_params_v1_to_v2(params)
 
     return params

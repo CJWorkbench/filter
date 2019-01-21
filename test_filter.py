@@ -5,17 +5,12 @@ import pandas as pd
 from pandas.testing import assert_frame_equal
 from filter import render, migrate_params
 
-# turn menu strings into indices for parameter dictionary
-# must be kept in sync with filter.json
-menutext = "Select||Text contains|Text does not contain|Text is exactly||Text contains regex|Text does not contain regex|Text matches regex exactly||Cell is empty|Cell is not empty||Equals|Greater than|Greater than or equals|Less than|Less than or equals||Date is|Date is before|Date is after||Filter by text"
-menu = menutext.split('|')
-
 
 def simple_params(colname: str, condition: str, value: str,
                   case_sensitive: bool=False,
                   keep: bool=True) -> Dict[str, Any]:
     return {
-        'keep': 0 if keep else 1,   # index corresponds to kepp/drop radio buttons
+        'keep': 0 if keep else 1,
         'filters': {
             'operator': 'and',
             'filters': [
@@ -88,10 +83,19 @@ class TestMigrateParams(unittest.TestCase):
             simple_params('A', 'cell_is_empty', 'value')
         )
 
+    def test_v0_from_dropdown(self):
+        self.assertEqual(
+            migrate_params({
+                'column': 'A',
+            }),
+            simple_params('A', '', '')
+        )
+
 
 class TestRender(unittest.TestCase):
     def setUp(self):
-        # Test data includes some partially and completely empty rows because this tends to freak out Pandas
+        # Test data includes some partially and completely empty rows because
+        # this tends to freak out Pandas
         self.table = pd.DataFrame(
             [['fred', 2, 3, 'round', '2018-1-12'],
              ['frederson', 5, np.nan, 'square', '2018-1-12 08:15'],
