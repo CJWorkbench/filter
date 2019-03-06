@@ -6,7 +6,7 @@
   "help_url":"modules/analyse/filter",
   "description": "Filter rows by combining simple conditions such as 'if text contains..' or 'if number is greater than..'",
   "param_schema": {
-    "keep": { "type": "integer", "default": 0 },
+    "keep": { "type": "boolean", "default": true },
     "filters": {
       "type": "dict",
       "properties": {
@@ -44,9 +44,12 @@
     {
       "name" : "",
       "id_name" : "keep",
-      "type" : "radio",
-      "radio_items" : "Keep|Delete",
-      "default": 0
+      "type": "radio",
+      "default": true,
+      "options": [
+        { "value": true, "label": "Keep" },
+        { "value": false, "label": "Delete" }
+      ]
     }
   ]
 }
