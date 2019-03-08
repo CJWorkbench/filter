@@ -113,6 +113,17 @@ class TestMigrateParams(unittest.TestCase):
             }
         )
 
+    def test_v3(self):
+        self.assertEqual(
+            migrate_params({
+                'keep': True,
+                'filters': {'operator': 'and', 'filters': []},
+            }), {
+                'keep': True,
+                'filters': {'operator': 'and', 'filters': []},
+            }
+        )
+
 
 class TestRender(unittest.TestCase):
     def setUp(self):

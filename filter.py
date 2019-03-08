@@ -328,7 +328,10 @@ def migrate_params(params: Dict[str, Any]):
     if 'column' in params:
         params = _migrate_params_v1_to_v2(params)
 
-    if isinstance(params['keep'], int):
+    # v2: 'keep' is an integer (not a boolean)
+    # Don't use `isinstance(params['keep'], int)` because bool is a subclass of
+    # int (!)
+    if not isinstance(params['keep'], bool):
         params = _migrate_params_v2_to_v3(params)
 
     return params
