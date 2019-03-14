@@ -176,6 +176,40 @@ class TestRender(unittest.TestCase):
                                False]].reset_index(drop=True)
         assert_frame_equal(result, expected)
 
+    def test_contains_regex_parse_error(self):
+        table = pd.DataFrame({'A': ['a']})
+        params = simple_params('A', 'text_contains_regex', '*',
+                               case_sensitive=True)
+        result = render(table, params)
+        self.assertEqual(
+            result,
+            'Regex parse error: no argument for repetition operator: *'
+        )
+
+    def test_contains_regex_parse_error_case_insensitive(self):
+        table = pd.DataFrame({'A': ['a']})
+        params = simple_params('A', 'text_contains_regex', '(',
+                               case_sensitive=False)
+        result = render(table, params)
+        self.assertEqual(
+            result,
+            'Regex parse error: missing ): ('
+        )
+
+    def test_contains_regex_nan(self):
+        table = pd.DataFrame({'A': ['a', np.nan]})
+        params = simple_params('A', 'text_contains_regex', 'a',
+                               case_sensitive=True)
+        result = render(table, params)
+        assert_frame_equal(result, pd.DataFrame({'A': ['a']}))
+
+    def test_contains_regex_case_insensitive(self):
+        table = pd.DataFrame({'A': ['a', 'A', 'b']})
+        params = simple_params('A', 'text_contains_regex', 'a',
+                               case_sensitive=False)
+        result = render(table, params)
+        assert_frame_equal(result, pd.DataFrame({'A': ['a', 'A']}))
+
     def test_contains_regex_drop(self):
         params = simple_params('a', 'text_contains_regex', 'f[a-zA-Z]+d',
                                case_sensitive=True, keep=False)
