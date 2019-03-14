@@ -1,6 +1,6 @@
 from collections import namedtuple
 import functools
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
@@ -39,6 +39,18 @@ def str_to_regex(s: str, case_sensitive: bool):
         r = re2.compile(f'(?i:{s})')
 
     return r
+
+
+def series_map_predicate(series: pd.Series, pred: Callable[[str], bool]):
+    def safe_pred(s: Optional[str]) -> bool:
+        # optimization over pd.isna(): just check if it's a str. Any non-str is
+        # NA, because this is a str column. And this is faster than pd.isna()
+        # because it pd.isna() does ~5 isinstance() tests.
+        if isinstance(s, str):
+            return pred(s)
+        else:
+            return False
+    return series.map(safe_pred)
 
 
 def series_to_text(series, strict=False):
@@ -146,7 +158,7 @@ def mask_text_contains(series, text, case_sensitive):
 @type_text
 def mask_text_contains_regex(series, text, case_sensitive):
     r = str_to_regex(text, case_sensitive)
-    contains = series.map(r.test_search, na_action='ignore')
+    contains = series_map_predicate(series, r.test_search)
     return contains == True  # noqa: E712
 
 
@@ -162,6 +174,7 @@ def mask_text_does_not_contain_regex(series, text, case_sensitive):
     # keeprows = not matching, allow NaN
     r = str_to_regex(text, case_sensitive)
     contains = series.map(r.test_search, na_action='ignore')
+    contains = series_map_predicate(series, r.test_search)
     return contains != True  # noqa: E712
 
 
@@ -176,7 +189,7 @@ def mask_text_is_exactly(series, text, case_sensitive):
 @type_text
 def mask_text_is_exactly_regex(series, text, case_sensitive):
     r = str_to_regex(text, case_sensitive)
-    contains = series.map(r.test_fullmatch, na_action='ignore')
+    contains = series_map_predicate(series, r.test_search)
     return contains == True  # noqa: E712
 
 

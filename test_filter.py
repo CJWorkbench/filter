@@ -203,6 +203,14 @@ class TestRender(unittest.TestCase):
         result = render(table, params)
         assert_frame_equal(result, pd.DataFrame({'A': ['a']}))
 
+    def test_contains_regex_nan_categorical(self):
+        table = pd.DataFrame({'A': ['a', np.nan]}, dtype='category')
+        params = simple_params('A', 'text_contains_regex', 'a',
+                               case_sensitive=True)
+        result = render(table, params)
+        assert_frame_equal(result,
+                           pd.DataFrame({'A': ['a']}, dtype='category'))
+
     def test_contains_regex_case_insensitive(self):
         table = pd.DataFrame({'A': ['a', 'A', 'b']})
         params = simple_params('A', 'text_contains_regex', 'a',
