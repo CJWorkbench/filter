@@ -502,4 +502,10 @@ def render(table, params):
 
     ret = table[mask]
     ret.reset_index(drop=True, inplace=True)
+
+    for column in ret.columns:
+        series = ret[column]
+        if hasattr(series, 'cat'):
+            series.cat.remove_unused_categories(inplace=True)
+
     return ret
