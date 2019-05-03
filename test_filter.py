@@ -429,7 +429,7 @@ class TestRender(unittest.TestCase):
                             {
                                 'colname': 'A',
                                 'condition': 'number_is_less_than',
-                                'value': 3,
+                                'value': '3',
                                 'case_sensitive': False,
                             },
                         ],
@@ -440,7 +440,7 @@ class TestRender(unittest.TestCase):
                             {
                                 'colname': 'B',
                                 'condition': 'number_is_greater_than',
-                                'value': 2,
+                                'value': '2',
                                 'case_sensitive': False,
                             },
                         ],
@@ -464,7 +464,7 @@ class TestRender(unittest.TestCase):
                             {
                                 'colname': 'A',
                                 'condition': 'number_is_less_than',
-                                'value': 2,
+                                'value': '2',
                                 'case_sensitive': False,
                             },
                         ],
@@ -475,7 +475,7 @@ class TestRender(unittest.TestCase):
                             {
                                 'colname': 'B',
                                 'condition': 'number_is_greater_than',
-                                'value': 3,
+                                'value': '3',
                                 'case_sensitive': False,
                             },
                         ],
@@ -499,13 +499,13 @@ class TestRender(unittest.TestCase):
                             {
                                 'colname': 'A',
                                 'condition': 'number_is_less_than',
-                                'value': 3,
+                                'value': '3',
                                 'case_sensitive': False,
                             },
                             {
                                 'colname': 'B',
                                 'condition': 'number_is_greater_than',
-                                'value': 2,
+                                'value': '2',
                                 'case_sensitive': False,
                             },
                         ],
@@ -529,13 +529,13 @@ class TestRender(unittest.TestCase):
                             {
                                 'colname': 'A',
                                 'condition': 'number_is_less_than',
-                                'value': 2,
+                                'value': '2',
                                 'case_sensitive': False,
                             },
                             {
                                 'colname': 'B',
                                 'condition': 'number_is_greater_than',
-                                'value': 3,
+                                'value': '3',
                                 'case_sensitive': False,
                             },
                         ],
@@ -545,6 +545,50 @@ class TestRender(unittest.TestCase):
         }
         result = render(table, params)
         assert_frame_equal(result, pd.DataFrame({'A': [1, 3], 'B': [2, 4]}))
+
+    def test_multi_filters_and_subfilters_all_and(self):
+        # https://www.pivotaltracker.com/story/show/165434277
+        # I couldn't reproduce -- dunno what the issue was. But it's good to
+        # test for it!
+        table = pd.DataFrame({'A': [1, 2, 3, 4, 5, 6]})
+        params = {
+            'keep': True,
+            'filters': {
+                'operator': 'and',
+                'filters': [
+                    {
+                        'operator': 'and',
+                        'subfilters': [
+                            {
+                                'colname': 'A',
+                                'condition': 'number_is_greater_than',
+                                'value': '1',
+                                'case_sensitive': False,
+                            },
+                            {
+                                'colname': 'A',
+                                'condition': 'number_is_greater_than',
+                                'value': '5',
+                                'case_sensitive': False,
+                            }
+                        ],
+                    },
+                    {
+                        'operator': 'and',
+                        'subfilters': [
+                            {
+                                'colname': 'A',
+                                'condition': 'number_is_greater_than',
+                                'value': '2',
+                                'case_sensitive': False,
+                            },
+                        ],
+                    }
+                ],
+            },
+        }
+        result = render(table, params)
+        assert_frame_equal(result, pd.DataFrame({'A': [6]}))
 
     def test_remove_unused_categories(self):
         # [2019-04-23] we're stricter about module output now: categories must
