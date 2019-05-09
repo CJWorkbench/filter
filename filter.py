@@ -173,7 +173,6 @@ def mask_text_does_not_contain(series, text, case_sensitive):
 def mask_text_does_not_contain_regex(series, text, case_sensitive):
     # keeprows = not matching, allow NaN
     r = str_to_regex(text, case_sensitive)
-    contains = series.map(r.test_search, na_action='ignore')
     contains = series_map_predicate(series, r.test_search)
     return contains != True  # noqa: E712
 

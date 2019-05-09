@@ -243,12 +243,17 @@ class TestRender(unittest.TestCase):
         assert_frame_equal(result, expected)
 
     def test_not_contains_regex(self):
-        params = simple_params('a', 'text_does_not_contain_regex',
+        table = pd.DataFrame({
+            'A': pd.Series([' fredx', 'fd', np.nan, 'x'], dtype='category'),
+            'B': [1, 2, 3, 4],
+        })
+        params = simple_params('A', 'text_does_not_contain_regex',
                                'f[a-zA-Z]+d', case_sensitive=True)
-        result = render(self.table, params)
-        expected = self.table[[False, False, True, True,
-                               True]].reset_index(drop=True)
-        assert_frame_equal(result, expected)
+        result = render(table, params)
+        assert_frame_equal(result, pd.DataFrame({
+            'A': pd.Series(['fd', np.nan, 'x'], dtype='category'),
+            'B': [2, 3, 4],
+        }))
 
     def test_not_contains_regex_drop(self):
         params = simple_params('a', 'text_does_not_contain_regex',
