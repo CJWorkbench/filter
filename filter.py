@@ -183,6 +183,14 @@ def mask_text_is_exactly(series, text, case_sensitive):
 
 
 @type_text
+def mask_text_is_not_exactly(series, text, case_sensitive):
+    if case_sensitive:
+        return series != text
+    else:
+        return series.str.lower() != text.lower()
+
+
+@type_text
 def mask_text_is_exactly_regex(series, text, case_sensitive):
     r = str_to_regex(text, case_sensitive)
     contains = series_map_predicate(series, r.test_search)
@@ -252,6 +260,7 @@ MaskFunctions = {
     "text_contains": mask_text_contains,
     "text_does_not_contain": mask_text_does_not_contain,
     "text_is_exactly": mask_text_is_exactly,
+    "text_is_not_exactly": mask_text_is_not_exactly,
     "text_contains_regex": mask_text_contains_regex,
     "text_does_not_contain_regex": mask_text_does_not_contain_regex,
     "text_is_exactly_regex": mask_text_is_exactly_regex,
@@ -441,6 +450,8 @@ def _parse_subfilter(
             and (
                 condition
                 not in (
+                    "text_is_exactly",
+                    "text_is_not_exactly",
                     "cell_is_empty",
                     "cell_is_not_empty",
                     "cell_is_empty_str_or_null",

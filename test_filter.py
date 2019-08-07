@@ -261,6 +261,26 @@ class TestRender(unittest.TestCase):
         expected = self.table[[True, False, False, False, False]].reset_index(drop=True)
         assert_frame_equal(result, expected)
 
+    def test_exactly_empty_str(self):
+        params = simple_params("a", "text_is_exactly", "")
+        result = render(pd.DataFrame({"a": ["", np.nan, "x"]}), params)
+        assert_frame_equal(result, pd.DataFrame({"a": [""]}))
+
+    def test_not_exactly(self):
+        params = simple_params("a", "text_is_not_exactly", "x", case_sensitive=True)
+        result = render(pd.DataFrame({"a": ["x", "y", "z"]}), params)
+        assert_frame_equal(result, pd.DataFrame({"a": ["y", "z"]}))
+
+    def test_not_exactly_empty_str(self):
+        params = simple_params("a", "text_is_not_exactly", "")
+        result = render(pd.DataFrame({"a": ["", np.nan, "x"]}), params)
+        assert_frame_equal(result, pd.DataFrame({"a": [np.nan, "x"]}))
+
+    def test_not_exactly_case_insensitive(self):
+        params = simple_params("a", "text_is_not_exactly", "x", case_sensitive=False)
+        result = render(pd.DataFrame({"a": ["x", "X", "y"]}), params)
+        assert_frame_equal(result, pd.DataFrame({"a": ["y"]}))
+
     def test_exactly_regex(self):
         params = simple_params("d", "text_is_exactly_regex", "round")
         result = render(self.table, params)
