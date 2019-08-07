@@ -354,6 +354,11 @@ class TestRender(unittest.TestCase):
         result = render(self.table, params)
         self.assertEqual(result, "Value is not a number. Please enter a valid number.")
 
+    def test_not_equals(self):
+        params = simple_params("c", "number_does_not_equal", "3")
+        result = render(pd.DataFrame({"c": [1, np.nan, 3, 5]}), params)
+        assert_frame_equal(result, pd.DataFrame({"c": [1, np.nan, 5]}))
+
     def test_category_equals(self):
         table = pd.DataFrame({"A": ["foo", np.nan, "bar"]}, dtype="category")
         params = simple_params("A", "text_is_exactly", "foo", case_sensitive=True)
@@ -392,6 +397,17 @@ class TestRender(unittest.TestCase):
         params = simple_params("date", "date_is", "2015-07-31")
         result = render(self.table, params)
         expected = self.table[[False, False, False, True, False]].reset_index(drop=True)
+        assert_frame_equal(result, expected)
+
+    def test_date_is_not(self):
+        params = simple_params("date", "date_is_not", "2015-07-31")
+        result = render(
+            pd.DataFrame(
+                {"date": ["2015-07-31", "2015-07-20"]}, dtype="datetime64[ns]"
+            ),
+            params,
+        )
+        expected = pd.DataFrame({"date": ["2015-07-20"]}, dtype="datetime64[ns]")
         assert_frame_equal(result, expected)
 
     def test_bad_date(self):

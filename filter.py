@@ -222,6 +222,11 @@ def mask_number_equals(series, number, case_sensitive):
 
 
 @type_number
+def mask_number_does_not_equal(series, number, case_sensitive):
+    return series != number
+
+
+@type_number
 def mask_number_is_greater_than(series, number, case_sensitive):
     return series > number
 
@@ -244,6 +249,11 @@ def mask_number_is_less_than_or_equals(series, number, case_sensitive):
 @type_date
 def mask_date_is(series, date, case_sensitive):
     return series == date
+
+
+@type_date
+def mask_date_is_not(series, date, case_sensitive):
+    return series != date
 
 
 @type_date
@@ -276,11 +286,13 @@ MaskFunctions = {
     "cell_is_empty_str_or_null": mask_cell_is_empty,
     "cell_is_not_empty_str_or_null": mask_cell_is_not_empty,
     "number_equals": mask_number_equals,
+    "number_does_not_equal": mask_number_does_not_equal,
     "number_is_greater_than": mask_number_is_greater_than,
     "number_is_greater_than_or_equals": mask_number_is_greater_than_or_equals,
     "number_is_less_than": mask_number_is_less_than,
     "number_is_less_than_or_equals": mask_number_is_less_than_or_equals,
     "date_is": mask_date_is,
+    "date_is_not": mask_date_is_not,
     "date_is_before": mask_date_is_before,
     "date_is_after": mask_date_is_after,
 }
