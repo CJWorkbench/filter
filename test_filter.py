@@ -282,9 +282,12 @@ class TestRender(unittest.TestCase):
         assert_frame_equal(result, pd.DataFrame({"a": ["y"]}))
 
     def test_exactly_regex(self):
-        params = simple_params("d", "text_is_exactly_regex", "round")
-        result = render(self.table, params)
-        expected = self.table[[True, False, False, True, False]].reset_index(drop=True)
+        table = pd.DataFrame(
+            {"A": ["around", "round", "rounded", np.nan, "e"], "B": [1, 2, 3, 4, 5]}
+        )
+        params = simple_params("A", "text_is_exactly_regex", "round")
+        result = render(table, params)
+        expected = pd.DataFrame({"A": ["round"], "B": [2]})
         assert_frame_equal(result, expected)
 
     def test_exactly_non_text_column(self):

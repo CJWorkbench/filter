@@ -193,7 +193,7 @@ def mask_text_is_not_exactly(series, text, case_sensitive):
 @type_text
 def mask_text_is_exactly_regex(series, text, case_sensitive):
     r = str_to_regex(text, case_sensitive)
-    contains = series_map_predicate(series, r.test_search)
+    contains = series_map_predicate(series, r.test_fullmatch)
     return contains == True  # noqa: E712
 
 
