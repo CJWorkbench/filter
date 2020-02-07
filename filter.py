@@ -8,7 +8,7 @@ import re2
 from cjwmodule import i18n
 
 
-def UserVisibleError(Exception):
+class UserVisibleError(Exception):
     """A message for the user. Use err.i18n_message to see it."""
 
     @property
@@ -16,7 +16,7 @@ def UserVisibleError(Exception):
         raise NotImplementedError()
 
 
-def RegexParseError(UserVisibleError):
+class RegexParseError(UserVisibleError):
     def __init__(self, error):
         self.error = error
 
@@ -29,7 +29,7 @@ def RegexParseError(UserVisibleError):
         )
 
 
-def ColumnNotTextError(UserVisibleError):
+class ColumnNotTextError(UserVisibleError):
     @property
     def i18n_message(self):
         return i18n.trans(
@@ -38,7 +38,7 @@ def ColumnNotTextError(UserVisibleError):
         )
 
 
-def ColumnNotNumbersError(UserVisibleError):
+class ColumnNotNumbersError(UserVisibleError):
     @property
     def i18n_message(self):
         return i18n.trans(
@@ -47,7 +47,7 @@ def ColumnNotNumbersError(UserVisibleError):
         )
 
 
-def ColumnNotDatesError(UserVisibleError):
+class ColumnNotDatesError(UserVisibleError):
     @property
     def i18n_message(self):
         return i18n.trans(
@@ -56,7 +56,7 @@ def ColumnNotDatesError(UserVisibleError):
         )
 
 
-def ValueNotNumberError(UserVisibleError):
+class ValueNotNumberError(UserVisibleError):
     @property
     def i18n_message(self):
         return i18n.trans(
@@ -65,7 +65,7 @@ def ValueNotNumberError(UserVisibleError):
         )
 
 
-def ValueNotDateError(UserVisibleError):
+class ValueNotDateError(UserVisibleError):
     @property
     def i18n_message(self):
         return i18n.trans(
@@ -73,7 +73,6 @@ def ValueNotDateError(UserVisibleError):
             "Value is not a date. Please enter a date and time."
         )
     
-
 
 def str_to_regex(s: str, case_sensitive: bool):
     """
