@@ -53,7 +53,6 @@ def ColumnNotDatesError(UserVisibleError):
         return i18n.trans(
             "ColumnNotDatesError.message", 
             "Column is not dates. Please convert to dates."
-        )mn is not text. Please convert to text."
         )
 
 
