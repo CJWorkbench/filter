@@ -1,6 +1,6 @@
 from collections import namedtuple
 import functools
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, Match, Optional, Pattern
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
@@ -13,23 +13,18 @@ class UserVisibleError(Exception):
     pass
 
 
-def str_to_regex(s: str, case_sensitive: bool):
+def str_to_regex(s: str, case_sensitive: bool) -> Pattern:
     """
     Convert to regexp, or raise UserVisibleError.
     """
+    options = re2.Options()
+    options.log_errors = False
+    options.never_capture = True  # we don't capture anything: we filter
     try:
         # Compile the actual regex, to generate the actual error message.
-        r = re2.compile(s)
+        r = re2.compile(s, options)
     except re2.error as err:
-        # Handle https://github.com/facebook/pyre2/pull/16
-        # Sometimes err.msg is an integer and err.pattern is the actual error
-        # message.
-        #
-        # Nix this when upstream is fixed.
-        if isinstance(err.msg, int):
-            msg = err.pattern
-        else:
-            msg = str(err)
+        msg = str(err.args[0], encoding="utf-8", errors="replace")
         raise UserVisibleError("Regex parse error: %s" % msg)
 
     if not case_sensitive:
@@ -152,10 +147,22 @@ def mask_text_contains(series, text, case_sensitive):
     return contains == True  # noqa: E712
 
 
+def _test_re2_match(f: Callable[[str], Match], maybe_s: Optional[str]) -> bool:
+    # optimization over pd.isna(): just check if it's a str. Any non-str is
+    # NA, because this is a str column. And this is faster than pd.isna()
+    # because it pd.isna() does ~5 isinstance() tests.
+    if isinstance(maybe_s, str):
+        return bool(f(maybe_s))
+    else:
+        return False
+
+
 @type_text
 def mask_text_contains_regex(series, text, case_sensitive):
     r = str_to_regex(text, case_sensitive)
-    contains = series_map_predicate(series, r.test_search)
+    contains = series_map_predicate(
+        series, functools.partial(_test_re2_match, r.search)
+    )
     return contains == True  # noqa: E712
 
 
@@ -170,7 +177,9 @@ def mask_text_does_not_contain(series, text, case_sensitive):
 def mask_text_does_not_contain_regex(series, text, case_sensitive):
     # keeprows = not matching, allow NaN
     r = str_to_regex(text, case_sensitive)
-    contains = series_map_predicate(series, r.test_search)
+    contains = series_map_predicate(
+        series, functools.partial(_test_re2_match, r.search)
+    )
     return contains != True  # noqa: E712
 
 
@@ -193,7 +202,9 @@ def mask_text_is_not_exactly(series, text, case_sensitive):
 @type_text
 def mask_text_is_exactly_regex(series, text, case_sensitive):
     r = str_to_regex(text, case_sensitive)
-    contains = series_map_predicate(series, r.test_fullmatch)
+    contains = series_map_predicate(
+        series, functools.partial(_test_re2_match, r.fullmatch)
+    )
     return contains == True  # noqa: E712
 
 
