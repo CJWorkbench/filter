@@ -7,7 +7,7 @@ name = "pypi"
 numpy = "*"
 pandas = "~=0.25.0"
 fb-re2 = "*"
-cjwmodule = "*"
+cjwmodule = ">=1.4.0"
 
 [dev-packages]
 
