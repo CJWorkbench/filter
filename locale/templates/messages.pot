@@ -15,32 +15,32 @@ msgid "_spec.parameters.keep.options.False.label"
 msgstr ""
 
 #. default-message: Regex parse error: {error}
-#: filter.py:25
-msgid "RegexParseError.message"
+#: filter.py:31
+msgid "regexParseError.message"
 msgstr ""
 
 #. default-message: Column is not text. Please convert to text.
-#: filter.py:35
-msgid "ColumnNotTextError.message"
+#: filter.py:69
+msgid "columnNotTextError.message"
 msgstr ""
 
 #. default-message: Column is not numbers. Please convert to numbers.
-#: filter.py:44
-msgid "ColumnNotNumbersError.message"
-msgstr ""
-
-#. default-message: Column is not dates. Please convert to dates.
-#: filter.py:53
-msgid "ColumnNotDatesError.message"
+#: filter.py:84
+msgid "columnNotNumbersError.message"
 msgstr ""
 
 #. default-message: Value is not a number. Please enter a valid number.
-#: filter.py:62
-msgid "ValueNotNumberError.message"
+#: filter.py:97
+msgid "valueNotNumberError.message"
+msgstr ""
+
+#. default-message: Column is not dates. Please convert to dates.
+#: filter.py:117
+msgid "columnNotDatesError.message"
 msgstr ""
 
 #. default-message: Value is not a date. Please enter a date and time.
-#: filter.py:71
-msgid "ValueNotDateError.message"
+#: filter.py:130
+msgid "valueNotDateError.message"
 msgstr ""
 

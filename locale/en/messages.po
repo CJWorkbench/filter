@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2020-02-07 15:24+0000\n"
+"POT-Creation-Date: 2020-02-18 17:27+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -33,27 +33,27 @@ msgstr "Keep"
 msgid "_spec.parameters.keep.options.False.label"
 msgstr "Delete"
 
-#: filter.py:25
-msgid "RegexParseError.message"
+#: filter.py:31
+msgid "regexParseError.message"
 msgstr "Regex parse error: {error}"
 
-#: filter.py:35
-msgid "ColumnNotTextError.message"
+#: filter.py:69
+msgid "columnNotTextError.message"
 msgstr "Column is not text. Please convert to text."
 
-#: filter.py:44
-msgid "ColumnNotNumbersError.message"
+#: filter.py:84
+msgid "columnNotNumbersError.message"
 msgstr "Column is not numbers. Please convert to numbers."
 
-#: filter.py:53
-msgid "ColumnNotDatesError.message"
-msgstr "Column is not dates. Please convert to dates."
-
-#: filter.py:62
-msgid "ValueNotNumberError.message"
+#: filter.py:97
+msgid "valueNotNumberError.message"
 msgstr "Value is not a number. Please enter a valid number."
 
-#: filter.py:71
-msgid "ValueNotDateError.message"
+#: filter.py:117
+msgid "columnNotDatesError.message"
+msgstr "Column is not dates. Please convert to dates."
+
+#: filter.py:130
+msgid "valueNotDateError.message"
 msgstr "Value is not a date. Please enter a date and time."
 
