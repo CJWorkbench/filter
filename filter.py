@@ -5,13 +5,16 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
 import re2
+from cjwmodule import i18n
 
 
 class UserVisibleError(Exception):
-    """A message for the user. Use str(err) to see it."""
+    """An exception that has a `i18n.I18nMessage` as its first argument. Use `err.i18n_message` to see it."""
 
-    pass
-
+    @property
+    def i18n_message(self):
+        return self.args[0]
+    
 
 def str_to_regex(s: str, case_sensitive: bool) -> Pattern:
     """
@@ -25,7 +28,11 @@ def str_to_regex(s: str, case_sensitive: bool) -> Pattern:
         r = re2.compile(s, options)
     except re2.error as err:
         msg = str(err.args[0], encoding="utf-8", errors="replace")
-        raise UserVisibleError("Regex parse error: %s" % msg)
+        raise UserVisibleError(i18n.trans(
+            "regexParseError.message", 
+            "Regex parse error: {error}", 
+            {"error": msg}
+        ))
 
     if not case_sensitive:
         # case-insensitive: compile _again_ (fb-re2 doesn't support
@@ -59,7 +66,10 @@ def series_to_text(series, strict=False):
     if hasattr(series, "cat") or series.dtype == object:
         return series
     else:
-        raise UserVisibleError("Column is not text. Please convert to text.")
+        raise UserVisibleError(i18n.trans(
+            "columnNotTextError.message", 
+            "Column is not text. Please convert to text."
+        ))
 
 
 def series_to_number(series):
@@ -71,7 +81,10 @@ def series_to_number(series):
     try:
         return pd.to_numeric(series, errors="raise")
     except ValueError:
-        raise UserVisibleError("Column is not numbers. Please convert to numbers.")
+        raise UserVisibleError(i18n.trans(
+            "columnNotNumbersError.message", 
+            "Column is not numbers. Please convert to numbers."
+        ))
 
 
 def value_to_number(value):
@@ -81,7 +94,10 @@ def value_to_number(value):
     try:
         return pd.to_numeric(value, errors="raise")
     except ValueError:
-        raise UserVisibleError("Value is not a number. Please enter a valid number.")
+        raise UserVisibleError(i18n.trans(
+            "valueNotNumberError.message", 
+            "Value is not a number. Please enter a valid number."
+        ))
 
 
 def series_to_datetime(series):
@@ -98,7 +114,10 @@ def series_to_datetime(series):
 
         return pd.to_datetime(series, utc=True)
     except ValueError:
-        raise UserVisibleError("Column is not dates. Please convert to dates.")
+        raise UserVisibleError(i18n.trans(
+            "columnNotDatesError.message", 
+            "Column is not dates. Please convert to dates."
+        ))
 
 
 def value_to_datetime(value):
@@ -108,7 +127,10 @@ def value_to_datetime(value):
     try:
         return pd.to_datetime(value, utc=True)
     except ValueError:
-        raise UserVisibleError("Value is not a date. Please enter a date and time.")
+        raise UserVisibleError(i18n.trans(
+            "valueNotDateError.message", 
+            "Value is not a date. Please enter a date and time."
+        ))
 
 
 def type_text(f, strict=False):
@@ -550,7 +572,7 @@ def render(table, params):
     try:
         mask = _mask_filters(table, filters)
     except UserVisibleError as err:
-        return str(err)
+        return err.i18n_message
 
     if not params["keep"]:
         mask = ~mask
