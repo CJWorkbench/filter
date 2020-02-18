@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2020-02-07 15:24+0000\n"
+"POT-Creation-Date: 2020-02-18 15:37+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: el\n"
@@ -20,16 +20,18 @@ msgstr ""
 "Generated-By: Babel 2.8.0\n"
 
 msgid "_spec.name"
-msgstr ""
+msgstr "Φιλτράρισμα βάσει συνθήκης"
 
 msgid "_spec.description"
 msgstr ""
+"Φιλτράρισμα σειρών που συνδυάζει απλές συνθήκες όπως «εάν το κείμενο "
+"περιέχει...» ή «εάν ο αριθμός είναι μεγαλύτερος από...»"
 
 msgid "_spec.parameters.keep.options.True.label"
-msgstr ""
+msgstr "Διατήρηση"
 
 msgid "_spec.parameters.keep.options.False.label"
-msgstr ""
+msgstr "Διαγραφή"
 
 #: filter.py:25
 msgid "RegexParseError.message"
