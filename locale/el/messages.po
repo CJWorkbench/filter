@@ -32,28 +32,26 @@ msgstr "Διατήρηση"
 
 msgid "_spec.parameters.keep.options.False.label"
 msgstr "Διαγραφή"
-
 #: filter.py:31
 msgid "regexParseError.message"
-msgstr ""
+msgstr "Σφάλμα ανάλυσης regex: {error}"
 
 #: filter.py:69
 msgid "columnNotTextError.message"
-msgstr ""
+msgstr "Η στήλη δεν είναι στήλη κειμένου. Μετατρέψτε την σε κείμενο."
 
 #: filter.py:84
 msgid "columnNotNumbersError.message"
-msgstr ""
+msgstr "Η στήλη δεν είναι στήλη αριθμών. Μετατρέψτε την σε αριθμούς."
 
 #: filter.py:97
 msgid "valueNotNumberError.message"
-msgstr ""
+msgstr "Η τιμή δεν είναι αριθμός. Πληκτρολογήστε έναν έγκυρο αριθμό."
 
 #: filter.py:117
 msgid "columnNotDatesError.message"
-msgstr ""
+msgstr "Η στήλη δεν είναι στήλη ημερομηνιών. Μετατρέψτε την σε ημερομηνίες."
 
 #: filter.py:130
 msgid "valueNotDateError.message"
-msgstr ""
-
+msgstr "Η τιμή δεν είναι ημερομηνία. Πληκτρολογήστε ημερομηνία και ώρα."
